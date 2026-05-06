@@ -1,46 +1,32 @@
-/* ═══ DATABASE — Daniel Veículos ═══
- * Persistência real via localStorage com fallback para dados de demonstração
- * Todas operações CRUD são persistidas imediatamente
+/* ═══ DATABASE — Daniel Veículos (Firebase Edition) ═══
+ * Persistência real via Firebase Realtime Database
+ * Sincronização automática entre dispositivos
  */
 'use strict';
 
 const DB = (() => {
+  // CONFIGURAÇÃO DO FIREBASE
+  const firebaseConfig = {
+    apiKey: "AIzaSyDz6B2De-7CiQWQyPMyC4_niW6Wm1qc-XA",
+    authDomain: "meusistemacadastro-d7d10.firebaseapp.com",
+    databaseURL: "https://meusistemacadastro-d7d10-default-rtdb.firebaseio.com",
+    projectId: "meusistemacadastro-d7d10",
+    storageBucket: "meusistemacadastro-d7d10.firebasestorage.app",
+    messagingSenderId: "1034148971946",
+    appId: "1:1034148971946:web:01dd348cfac2bcc9a4d7d3"
+  };
+
+  // Inicializa Firebase
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  const rdb = firebase.database();
+
   const KEYS = {
     vehicles:  'dv_vehicles',
     customers: 'dv_customers',
     finance:   'dv_finance',
     notifs:    'dv_notifs',
-  };
-
-  /* ── Seed Data ── */
-  const SEED = {
-    vehicles: [
-      {id:1,brand:'Porsche',model:'911 Carrera',year:2024,price:840000,km:12000,status:'available',color:'Branco Carrara',fuel:'Gasolina',trans:'PDK',plate:'ABC-1D23'},
-      {id:2,brand:'BMW',model:'M4 Competition',year:2025,price:650000,km:5200,status:'available',color:'Azul San Marino',fuel:'Gasolina',trans:'Automático',plate:'DEF-4G56'},
-      {id:3,brand:'Mercedes-Benz',model:'G63 AMG',year:2025,price:1350000,km:800,status:'reserved',color:'Preto Obsidian',fuel:'Gasolina',trans:'Automático',plate:'GHI-7J89'},
-      {id:4,brand:'Audi',model:'RS6 Avant',year:2024,price:610000,km:8600,status:'sold',color:'Cinza Nardo',fuel:'Gasolina',trans:'Automático',plate:'JKL-0M12'},
-      {id:5,brand:'Range Rover',model:'Sport HSE',year:2024,price:425000,km:15000,status:'proposal',color:'Verde British',fuel:'Diesel',trans:'Automático',plate:'MNO-3P45'},
-      {id:6,brand:'BMW',model:'X5 M50i',year:2025,price:760000,km:3200,status:'available',color:'Preto Safira',fuel:'Gasolina',trans:'Automático',plate:'PQR-6S78'},
-      {id:7,brand:'Ferrari',model:'F8 Tributo',year:2022,price:2850000,km:2500,status:'vitrine',color:'Vermelho Corsa',fuel:'Gasolina',trans:'F1 DCT',plate:'STU-9V01',destaque:true},
-      {id:8,brand:'Volvo',model:'XC90 T8',year:2024,price:520000,km:18500,status:'available',color:'Prata Cristal',fuel:'Híbrido',trans:'Automático',plate:'VWX-2Y34'},
-      {id:9,brand:'Porsche',model:'911 GT3 RS',year:2025,price:1950000,km:1200,status:'reserved',color:'Branco',fuel:'Gasolina',trans:'PDK',plate:'YZA-5B67'},
-      {id:10,brand:'BMW',model:'M5 Individual',year:2025,price:980000,km:4800,status:'available',color:'Preto Safira',fuel:'Gasolina',trans:'Automático',plate:'BCD-8E90'},
-      {id:11,brand:'Porsche',model:'Macan S',year:2022,price:512400,km:9700,status:'sold',color:'Cinza Vulcano',fuel:'Gasolina',trans:'PDK',plate:'EFG-1H23'},
-      {id:12,brand:'BMW',model:'320i M-Sport',year:2023,price:285000,km:22000,status:'sold',color:'Azul Mineral',fuel:'Gasolina',trans:'Automático',plate:'HIJ-4K56'},
-    ],
-    customers: [
-      {id:1,name:'Ricardo Mendonça',email:'ricardo@email.com',phone:'(11) 99999-1111',cpf:'123.456.789-00',city:'São Paulo, SP',interest:'Porsche 911 GT3 RS',status:'negotiation',lastContact:'Hoje, 10:45',via:'WhatsApp'},
-      {id:2,name:'Ana Silva',email:'ana.silva@email.com',phone:'(41) 98888-2222',cpf:'987.654.321-11',city:'Curitiba, PR',interest:'Mercedes-AMG G 63',status:'test-drive',lastContact:'Ontem, 16:20',via:'Visita Presencial'},
-      {id:3,name:'Lucas Costa',email:'lucas.c@email.com',phone:'(21) 97777-3333',cpf:'456.789.123-22',city:'Rio de Janeiro, RJ',interest:'BMW M5 Individual',status:'new-lead',lastContact:'2 dias atrás',via:'Site Institucional'},
-      {id:4,name:'Roberto Silva',email:'roberto@email.com',phone:'(31) 96666-4444',cpf:'321.654.987-33',city:'Belo Horizonte, MG',interest:'Porsche 911 Carrera',status:'closed',lastContact:'3 dias atrás',via:'Telefone'},
-      {id:5,name:'Ana Paula M.',email:'anapaula@email.com',phone:'(19) 95555-5555',cpf:'654.321.987-44',city:'Campinas, SP',interest:'Range Rover Sport',status:'proposal',lastContact:'Ontem, 14:00',via:'E-mail'},
-      {id:6,name:'Marcos G. Torres',email:'marcos.t@email.com',phone:'(61) 94444-6666',cpf:'789.123.456-55',city:'Brasília, DF',interest:'Audi RS6 Avant',status:'closed',lastContact:'Semana passada',via:'WhatsApp'},
-    ],
-    notifs: [
-      {id:1,title:'Nova reserva registrada',desc:'Porsche 911 GT3 RS — Ricardo Mendonça',time:'2h atrás',read:false},
-      {id:2,title:'Test-drive agendado',desc:'Mercedes-AMG G 63 — Ana Silva',time:'5h atrás',read:false},
-      {id:3,title:'Novo lead capturado',desc:'BMW M5 Individual — Lucas Costa',time:'1d atrás',read:false},
-    ],
   };
 
   /* ── Storage Helpers ── */
@@ -52,15 +38,44 @@ const DB = (() => {
   }
 
   function save(key, data) {
-    try { localStorage.setItem(key, JSON.stringify(data)); }
-    catch(e) { console.error('Storage error:', e); }
+    try {
+      // Salva local para resposta rápida
+      localStorage.setItem(key, JSON.stringify(data));
+      
+      // Salva no Firebase
+      const path = key.replace('dv_', '');
+      rdb.ref(path).set(data);
+    } catch(e) { console.error('Storage error:', e); }
   }
 
-  /* ── Initialize seed if first run ── */
-  function initSeed() {
-    if (!localStorage.getItem(KEYS.vehicles)) save(KEYS.vehicles, SEED.vehicles);
-    if (!localStorage.getItem(KEYS.customers)) save(KEYS.customers, SEED.customers);
-    if (!localStorage.getItem(KEYS.notifs))   save(KEYS.notifs, SEED.notifs);
+  /* ── Sincronização em Tempo Real ── */
+  function setupSync() {
+    // Escuta veículos
+    rdb.ref('vehicles').on('value', snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        localStorage.setItem(KEYS.vehicles, JSON.stringify(data));
+        window.dispatchEvent(new CustomEvent('db-updated'));
+      }
+    });
+
+    // Escuta clientes
+    rdb.ref('customers').on('value', snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        localStorage.setItem(KEYS.customers, JSON.stringify(data));
+        window.dispatchEvent(new CustomEvent('db-updated'));
+      }
+    });
+
+    // Escuta notificações
+    rdb.ref('notifs').on('value', snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        localStorage.setItem(KEYS.notifs, JSON.stringify(data));
+        window.dispatchEvent(new CustomEvent('db-updated'));
+      }
+    });
   }
 
   /* ── ID Generator ── */
@@ -68,7 +83,7 @@ const DB = (() => {
     return arr.length > 0 ? Math.max(...arr.map(i => i.id)) + 1 : 1;
   }
 
-  /* ── Finance (static + calculated) ── */
+  /* ── Finance (calculado com base nos veículos) ── */
   function calcFinance() {
     const vehicles = load(KEYS.vehicles, []);
     const sold = vehicles.filter(v => v.status === 'sold');
@@ -89,12 +104,10 @@ const DB = (() => {
       receivables: [
         {client:'Ricardo Mendes', desc:'BMW 320i M-Sport 2023', due:'15 Out 2023', value:285000, status:'Aguardando'},
         {client:'Sofia Almeida',  desc:'Porsche Macan S 2022',  due:'12 Out 2023', value:512400, status:'Compensando'},
-        {client:'Auto Prime Peças',desc:'Reembolso Garantia',   due:'10 Out 2023', value:15200,  status:'Recebido'},
       ],
       payables: [
         {sup:'Tech Insurance S/A', desc:'Seguro Frota Mensal', due:'22 Out 2023', value:8450,  status:'Pendente'},
         {sup:'Energia Solar SP',   desc:'Manutenção Mensal',   due:'25 Out 2023', value:1200,  status:'Agendado'},
-        {sup:'Marketing High-End', desc:'Ads Outubro',         due:'28 Out 2023', value:15000, status:'Agendado'},
       ],
       bars:[{m:'AGO',p:65},{m:'SET',p:78},{m:'OUT',p:92,cur:true},{m:'NOV',p:45,proj:true},{m:'DEZ',p:30,proj:true}],
     };
@@ -102,7 +115,9 @@ const DB = (() => {
 
   /* ── Public API ── */
   return {
-    init() { initSeed(); },
+    init() { 
+      setupSync(); 
+    },
 
     // ─ Vehicles ─
     vehicles(f = {}) {
@@ -118,7 +133,7 @@ const DB = (() => {
     vehicle(id)   { return load(KEYS.vehicles,[]).find(v => String(v.id) === String(id)); },
     addVehicle(d) {
       const arr = load(KEYS.vehicles, []);
-      const v = { id: nextId(arr), ...d, createdAt: new Date().toISOString() };
+      const v = { id: Date.now(), ...d, createdAt: new Date().toISOString() };
       arr.unshift(v);
       save(KEYS.vehicles, arr);
       this.addNotif(`Veículo cadastrado: ${v.brand} ${v.model}`, 'Estoque atualizado');
@@ -133,7 +148,8 @@ const DB = (() => {
       return arr[i];
     },
     deleteVehicle(id) {
-      save(KEYS.vehicles, load(KEYS.vehicles,[]).filter(v => String(v.id) !== String(id)));
+      const arr = load(KEYS.vehicles,[]).filter(v => String(v.id) !== String(id));
+      save(KEYS.vehicles, arr);
     },
 
     // ─ Customers ─
@@ -149,7 +165,7 @@ const DB = (() => {
     customer(id)   { return load(KEYS.customers,[]).find(c => String(c.id) === String(id)); },
     addCustomer(d) {
       const arr = load(KEYS.customers, []);
-      const c = { id: nextId(arr), ...d, lastContact: 'Agora', createdAt: new Date().toISOString() };
+      const c = { id: Date.now(), ...d, lastContact: 'Agora', createdAt: new Date().toISOString() };
       arr.unshift(c);
       save(KEYS.customers, arr);
       this.addNotif(`Novo cliente: ${c.name}`, 'CRM atualizado');
@@ -164,7 +180,8 @@ const DB = (() => {
       return arr[i];
     },
     deleteCustomer(id) {
-      save(KEYS.customers, load(KEYS.customers,[]).filter(c => String(c.id) !== String(id)));
+      const arr = load(KEYS.customers,[]).filter(c => String(c.id) !== String(id));
+      save(KEYS.customers, arr);
     },
 
     // ─ Notifications ─
@@ -173,7 +190,7 @@ const DB = (() => {
     addNotif(title, desc) {
       const arr = load(KEYS.notifs, []);
       arr.unshift({ id: Date.now(), title, desc, time: 'Agora', read: false });
-      if (arr.length > 50) arr.pop(); // máx 50
+      if (arr.length > 50) arr.pop();
       save(KEYS.notifs, arr);
     },
     markAllRead() {
@@ -230,12 +247,6 @@ const DB = (() => {
         status:  'completed',
         value:   v.price,
       }));
-    },
-
-    // ─ Reset para seed (dev) ─
-    resetToSeed() {
-      Object.values(KEYS).forEach(k => localStorage.removeItem(k));
-      initSeed();
     },
   };
 })();

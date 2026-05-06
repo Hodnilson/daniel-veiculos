@@ -155,6 +155,16 @@ const App = {
 
     // Router
     window.addEventListener('hashchange', () => this.route());
+    window.addEventListener('db-updated', () => {
+      // Refresh current page without full reload if on a data-heavy page
+      if (['dashboard', 'estoque', 'crm', 'financeiro', 'relatorios'].includes(this.page)) {
+        const el = document.getElementById('page-content');
+        const fn = Pages[this.page];
+        if (fn) el.innerHTML = fn();
+        this._updateNotifBadge();
+      }
+    });
+
     if (!location.hash || location.hash === '#/') location.hash = '#/dashboard';
     else this.route();
   },
