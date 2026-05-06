@@ -234,6 +234,48 @@ const UI = {
     av.textContent = Fmt.initials(input.value || '?');
   },
 
+  /* ─── Transaction Form ─── */
+  transactionForm(t) {
+    t = t || {};
+    const statuses = {'proposal':'Em Proposta', 'completed':'Concluído'};
+    const optSt = Object.entries(statuses).map(([v,l]) => `<option value="${v}"${t.status===v?' selected':''}>${l}</option>`).join('');
+    return `<form id="t-form" onsubmit="App.saveTransaction(event)" autocomplete="off">
+      <input type="hidden" name="id" value="${t.id || ''}">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Cliente *</label><input name="client" value="${t.client||''}" required placeholder="Ex: João da Silva"></div>
+        <div class="form-group"><label class="form-label">Veículo / Descrição *</label><input name="vehicle" value="${t.vehicle||''}" required placeholder="Ex: BMW M4"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Valor (R$) *</label><input name="value" type="number" min="0" value="${t.value||''}" required placeholder="150000"></div>
+        <div class="form-group"><label class="form-label">Vencimento</label><input name="due" type="date" value="${t.due||''}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Status</label><select name="status">${optSt}</select></div>
+      </div>
+    </form>`;
+  },
+
+  /* ─── Payable Form ─── */
+  payableForm(p) {
+    p = p || {};
+    const statuses = {'Agendado':'Agendado', 'Pendente':'Pendente', 'Pago':'Pago'};
+    const optSt = Object.entries(statuses).map(([v,l]) => `<option value="${v}"${p.status===v?' selected':''}>${l}</option>`).join('');
+    return `<form id="p-form" onsubmit="App.savePayable(event)" autocomplete="off">
+      <input type="hidden" name="id" value="${p.id || ''}">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Fornecedor *</label><input name="sup" value="${p.sup||''}" required placeholder="Ex: Seguradora X"></div>
+        <div class="form-group"><label class="form-label">Descrição *</label><input name="desc" value="${p.desc||''}" required placeholder="Ex: Seguro Mensal"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Valor (R$) *</label><input name="value" type="number" min="0" value="${p.value||''}" required placeholder="1500"></div>
+        <div class="form-group"><label class="form-label">Vencimento</label><input name="due" type="date" value="${p.due||''}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Status</label><select name="status">${optSt}</select></div>
+      </div>
+    </form>`;
+  },
+
 
   /* ─── Modal Template ─── */
   modal(t, b, f) {

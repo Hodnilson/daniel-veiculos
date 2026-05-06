@@ -96,9 +96,14 @@ body{background:#0A0A0A;color:#e3e2e2;font-family:Inter,sans-serif}
 /* Sidebar toggle: visible only on mobile */
 #sidebar-toggle{display:flex}
 @media(min-width:768px){#sidebar-toggle{display:none!important}}
+/* Capa Desfocada no Fundo */
+.bg-cover-blur { position:fixed; inset:0; z-index:-1; background-size:cover; background-position:center; filter:blur(20px); opacity:0.3; pointer-events:none; }
 </style>
 </head>
 <body class="h-screen overflow-hidden">
+<!-- Capa Desfocada no Fundo (COLOQUE A URL DA SUA IMAGEM AQUI) -->
+<div class="bg-cover-blur" style="background-image: url('');"></div>
+
 <!-- Blobs de fundo animados -->
 <div class="bg-grid" aria-hidden="true"></div>
 <div class="bg-blob bg-blob-1" aria-hidden="true"></div>
@@ -291,6 +296,9 @@ body{background:#0A0A0A;color:#e3e2e2;font-family:Inter,sans-serif}
 <div id="modal-overlay" hidden><div id="modal-container"></div></div>
 <!-- Toast -->
 <div id="toast-container"></div>
+
+<!-- html2pdf para relatórios -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <!-- Firebase SDK (Compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>

@@ -3,9 +3,9 @@ const Pages = {
   dashboard() {
     const k=DB.kpi(), wp=DB.weekly(), txs=DB.transactions();
     const bars=wp.map(d=>`<div class="flex flex-col items-center gap-xs flex-1"><div class="w-full bg-primary-container/20 rounded-t relative" style="height:${d.t}px"><div class="absolute bottom-0 w-full bg-primary-container rounded-t" style="height:${d.a}px"></div></div><span class="text-label-caps text-on-surface-variant font-label-caps text-[10px]">${d.d}</span></div>`).join('');
-    const txRows=txs.length ? txs.map(t=>UI.txRow(t.vehicle,t.client,t.status==='completed'?'Concluído':'Em Proposta',Fmt.moneyShort(t.value))).join('') : `<tr><td colspan="4" class="px-lg py-xl text-center text-on-surface-variant">Nenhuma transação registrada</td></tr>`;
+    const txRows=txs.length ? txs.map(t=>`<tr class="hover:bg-white/5 transition-colors cursor-pointer" onclick="App.editTransaction(${t.id})"><td class="px-lg py-md text-sm">${t.vehicle}</td><td class="px-lg py-md text-sm hidden md:table-cell">${t.client}</td><td class="px-lg py-md text-sm">${t.status==='completed'?'Concluído':'Proposta'}</td><td class="px-lg py-md text-sm text-right font-data-mono font-bold text-primary-container">${Fmt.moneyShort(t.value)}</td></tr>`).join('') : `<tr><td colspan="4" class="px-lg py-xl text-center text-on-surface-variant text-sm">Nenhuma transação registrada</td></tr>`;
     return `<div class="grid grid-cols-2 lg:grid-cols-4 gap-md">
-      ${UI.kpi('Receita Mensal',k.monthlySales,'+12.5%','payments',true)}
+      ${UI.kpi('Receita Mensal',k.monthlySales,'Total Atual','payments',true)}
       ${UI.kpi('Clientes Ativos',k.activeClients,'Total','group',false)}
       ${UI.kpi('Giro de Estoque',k.stockTurnover,'Média','sync',false)}
       ${UI.kpi('Veículos em Pátio',k.lotVehicles,'Unidades','inventory_2',false)}
@@ -30,12 +30,15 @@ const Pages = {
       </div>
     </div>
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-md pb-xl">
-      <div class="glass-panel rounded-xl overflow-hidden border border-white/5">
+      <div class="glass-panel rounded-xl overflow-hidden border border-white/5 flex flex-col">
         <div class="px-lg py-md border-b border-white/10 flex justify-between items-center">
           <h4 class="font-h3 text-on-surface">Transações Recentes</h4>
-          <button class="text-primary-container text-label-caps font-label-caps hover:underline" onclick="location.hash='#/financeiro'">Ver Tudo →</button>
+          <div class="flex gap-sm">
+            <button class="btn btn-primary btn-sm" onclick="App.addTransaction()"><span class="material-symbols-outlined text-[16px]">add</span>Nova</button>
+            <button class="btn btn-ghost btn-sm" onclick="location.hash='#/financeiro'">Ver Tudo</button>
+          </div>
         </div>
-        <table class="w-full"><thead class="bg-surface-container-high/50 text-label-caps text-on-surface-variant font-label-caps"><tr><th class="px-lg py-md text-left">Veículo</th><th class="px-lg py-md text-left hidden md:table-cell">Cliente</th><th class="px-lg py-md text-left">Status</th><th class="px-lg py-md text-right">Valor</th></tr></thead><tbody class="divide-y divide-white/5">${txRows}</tbody></table>
+        <div class="overflow-x-auto"><table class="w-full min-w-[400px]"><thead class="bg-surface-container-high/50 text-label-caps text-on-surface-variant font-label-caps"><tr><th class="px-lg py-md text-left">Veículo</th><th class="px-lg py-md text-left hidden md:table-cell">Cliente</th><th class="px-lg py-md text-left">Status</th><th class="px-lg py-md text-right">Valor</th></tr></thead><tbody class="divide-y divide-white/5">${txRows}</tbody></table></div>
       </div>
       <div class="glass-panel rounded-xl border border-white/5 p-lg">
         <h4 class="font-h3 text-on-surface mb-md">Atividade Recente</h4>
@@ -106,48 +109,43 @@ const Pages = {
 
   financeiro() {
     const f=DB.finance();
-    const recRows=f.receivables.map(r=>{
+    const recRows=f.receivables.length ? f.receivables.map(r=>{
       const sc=r.status==='Recebido'?'bg-primary-container/20 text-primary-container':r.status==='Aguardando'?'bg-yellow-500/10 text-yellow-400 status-pulse':'bg-surface-variant text-on-surface-variant';
-      return `<tr class="hover:bg-white/5 transition-colors border-b border-white/5"><td class="px-lg py-md"><div class="font-bold text-sm text-on-surface">${r.client}</div><div class="text-xs text-on-surface-variant">${r.desc}</div></td><td class="px-lg py-md text-sm font-data-mono">${r.due}</td><td class="px-lg py-md text-right font-data-mono font-bold text-primary-container">${Fmt.money(r.value)}</td><td class="px-lg py-md"><span class="${sc} px-sm py-1 rounded-full text-[10px] font-bold uppercase">${r.status}</span></td></tr>`;
-    }).join('');
-    const payRows=f.payables.map(p=>{
+      return `<tr class="hover:bg-white/5 transition-colors border-b border-white/5 cursor-pointer" onclick="App.editTransaction(${r.id})"><td class="px-lg py-md"><div class="font-bold text-sm text-on-surface">${r.client}</div><div class="text-xs text-on-surface-variant">${r.vehicle || r.desc}</div></td><td class="px-lg py-md text-sm font-data-mono">${r.due || '-'}</td><td class="px-lg py-md text-right font-data-mono font-bold text-primary-container">${Fmt.money(r.value)}</td><td class="px-lg py-md"><span class="${sc} px-sm py-1 rounded-full text-[10px] font-bold uppercase">${r.status}</span></td></tr>`;
+    }).join('') : `<tr><td colspan="4" class="px-lg py-md text-center text-on-surface-variant text-sm">Nenhuma transação a receber.</td></tr>`;
+    const payRows=f.payables.length ? f.payables.map(p=>{
       const sc=p.status==='Pendente'?'bg-error/10 text-error':'bg-surface-variant text-on-surface-variant';
       const dc=p.status==='Pendente'?'text-error':'text-on-surface';
-      return `<tr class="hover:bg-white/5 transition-colors border-b border-white/5"><td class="px-lg py-md"><div class="font-bold text-sm text-on-surface">${p.sup}</div><div class="text-xs text-on-surface-variant">${p.desc}</div></td><td class="px-lg py-md text-sm font-data-mono ${dc}">${p.due}</td><td class="px-lg py-md text-right font-data-mono font-bold">${Fmt.money(p.value)}</td><td class="px-lg py-md"><span class="${sc} px-sm py-1 rounded-full text-[10px] font-bold uppercase">${p.status}</span></td></tr>`;
-    }).join('');
+      return `<tr class="hover:bg-white/5 transition-colors border-b border-white/5 cursor-pointer" onclick="App.editPayable(${p.id})"><td class="px-lg py-md"><div class="font-bold text-sm text-on-surface">${p.sup}</div><div class="text-xs text-on-surface-variant">${p.desc}</div></td><td class="px-lg py-md text-sm font-data-mono ${dc}">${p.due || '-'}</td><td class="px-lg py-md text-right font-data-mono font-bold">${Fmt.money(p.value)}</td><td class="px-lg py-md"><span class="${sc} px-sm py-1 rounded-full text-[10px] font-bold uppercase">${p.status}</span></td></tr>`;
+    }).join('') : `<tr><td colspan="4" class="px-lg py-md text-center text-on-surface-variant text-sm">Nenhuma conta a pagar.</td></tr>`;
     const compBars=f.bars.map(c=>`<div class="flex-1 flex flex-col items-center gap-xs"><div class="w-full rounded-t relative" style="height:80px;background:rgba(255,255,255,.05)"><div class="absolute bottom-0 w-full rounded-t ${c.cur?'bg-primary-container':c.proj?'bg-white/10 border-t-2 border-dashed border-primary-container/40':'bg-primary-container/40'} transition-all" style="height:${c.p}%"></div></div><span class="text-[10px] font-label-caps ${c.cur?'text-primary-container font-bold':'text-on-surface-variant'}">${c.m}</span></div>`).join('');
-    return `<div class="grid grid-cols-2 lg:grid-cols-4 gap-md">
-      ${UI.finKpi('Fluxo de Caixa',Fmt.money(f.cashFlow),'account_balance_wallet','text-primary-container',`<div class="flex items-center gap-xs text-primary-container text-sm"><span class="material-symbols-outlined text-[14px]">trending_up</span>+12.5% este mês</div>`)}
-      ${UI.finKpi('Receita Mensal',Fmt.money(f.monthlyRevenue),'payments','text-primary-container',`<div class="w-full bg-white/5 h-1 rounded-full"><div class="bg-primary-container h-full" style="width:85%"></div></div><p class="text-xs text-on-surface-variant">Meta: ${Fmt.money(f.revenueTarget)}</p>`)}
-      ${UI.finKpi('Despesas',Fmt.money(f.totalExpenses),'receipt_long','text-error',`<div class="w-full bg-white/5 h-1 rounded-full"><div class="bg-error h-full" style="width:${f.expensePct}%"></div></div><p class="text-xs text-on-surface-variant">${f.expensePct}% do orçamento</p>`)}
-      ${UI.finKpi('Margem Líquida',f.netMargin+'%','monitoring','text-primary-container','<span class="text-xs text-on-surface-variant">Performance Superior</span>')}
+    return `<div id="finance-report-area"><div class="grid grid-cols-2 lg:grid-cols-4 gap-md mb-md">
+      ${UI.finKpi('Fluxo de Caixa',Fmt.money(f.cashFlow),'account_balance_wallet','text-primary-container',`<div class="flex items-center gap-xs text-primary-container text-sm"><span class="material-symbols-outlined text-[14px]">trending_up</span>Atual</div>`)}
+      ${UI.finKpi('Receita Mensal',Fmt.money(f.monthlyRevenue),'payments','text-primary-container',`<div class="w-full bg-white/5 h-1 rounded-full"><div class="bg-primary-container h-full" style="width:100%"></div></div><p class="text-xs text-on-surface-variant">Total faturado</p>`)}
+      ${UI.finKpi('Despesas',Fmt.money(f.totalExpenses),'receipt_long','text-error',`<div class="w-full bg-white/5 h-1 rounded-full"><div class="bg-error h-full" style="width:100%"></div></div><p class="text-xs text-on-surface-variant">Total de custos</p>`)}
+      ${UI.finKpi('Margem Líquida',f.netMargin+'%','monitoring','text-primary-container','<span class="text-xs text-on-surface-variant">Rentabilidade</span>')}
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-md mb-md">
       <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col">
-        <h3 class="font-h3 text-on-surface mb-lg">Impostos Estimados</h3>
-        <div class="space-y-md flex-1">${f.taxes.map(t=>`<div class="flex justify-between p-md bg-white/5 rounded-lg"><span class="text-sm text-on-surface-variant">${t.n}</span><span class="font-data-mono font-bold">${Fmt.money(t.v)}</span></div>`).join('')}</div>
-        <div class="mt-lg p-md bg-primary-container/5 border border-primary-container/20 rounded-lg"><p class="text-xs text-primary-container font-label-caps mb-xs">Provisão Q3</p><p class="text-h2 font-h2 text-primary-container">${Fmt.money(f.taxProv)}</p></div>
-        <button class="mt-md w-full border border-primary-container text-primary-container py-sm rounded-lg hover:bg-primary-container/10 transition-all font-bold text-sm">Gerar Relatório Fiscal</button>
+        <h3 class="font-h3 text-on-surface mb-lg">Dados de Venda</h3>
+        <div class="space-y-md flex-1">${f.salesData.map(t=>`<div class="flex justify-between p-md bg-white/5 rounded-lg"><span class="text-sm text-on-surface-variant">${t.n}</span><span class="font-data-mono font-bold">${Fmt.money(t.v)}</span></div>`).join('')}</div>
+        <button class="mt-md w-full border border-primary-container text-primary-container py-sm rounded-lg hover:bg-primary-container/10 transition-all font-bold text-sm" onclick="App.generatePdfReport()">Gerar Relatório em PDF</button>
       </div>
-      <div class="lg:col-span-2 glass-panel rounded-xl border border-white/5 overflow-hidden">
-        <div class="p-lg border-b border-white/5 flex justify-between items-center"><h3 class="font-h3 text-on-surface">Contas a Receber</h3></div>
-        <table class="w-full"><thead class="bg-white/5 text-on-surface-variant text-[11px] font-label-caps"><tr><th class="px-lg py-md text-left">Cliente</th><th class="px-lg py-md text-left hidden md:table-cell">Vencimento</th><th class="px-lg py-md text-right">Valor</th><th class="px-lg py-md">Status</th></tr></thead><tbody>${recRows}</tbody></table>
+      <div class="lg:col-span-2 glass-panel rounded-xl border border-white/5 overflow-hidden flex flex-col">
+        <div class="p-lg border-b border-white/5 flex justify-between items-center"><h3 class="font-h3 text-on-surface">Transações a Receber</h3><button class="btn btn-primary btn-sm" onclick="App.addTransaction()"><span class="material-symbols-outlined text-[16px]">add</span>Nova</button></div>
+        <div class="overflow-x-auto"><table class="w-full min-w-[500px]"><thead class="bg-white/5 text-on-surface-variant text-[11px] font-label-caps"><tr><th class="px-lg py-md text-left">Cliente</th><th class="px-lg py-md text-left hidden md:table-cell">Vencimento</th><th class="px-lg py-md text-right">Valor</th><th class="px-lg py-md">Status</th></tr></thead><tbody>${recRows}</tbody></table></div>
       </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-md pb-xl">
-      <div class="lg:col-span-2 glass-panel rounded-xl border border-white/5 overflow-hidden">
-        <div class="p-lg border-b border-white/5"><h3 class="font-h3 text-on-surface">Contas a Pagar</h3></div>
-        <table class="w-full"><thead class="bg-white/5 text-on-surface-variant text-[11px] font-label-caps"><tr><th class="px-lg py-md text-left">Fornecedor</th><th class="px-lg py-md text-left hidden md:table-cell">Vencimento</th><th class="px-lg py-md text-right">Valor</th><th class="px-lg py-md">Status</th></tr></thead><tbody>${payRows}</tbody></table>
+      <div class="lg:col-span-2 glass-panel rounded-xl border border-white/5 overflow-hidden flex flex-col">
+        <div class="p-lg border-b border-white/5 flex justify-between items-center"><h3 class="font-h3 text-on-surface">Contas a Pagar</h3><button class="btn btn-primary btn-sm" onclick="App.addPayable()"><span class="material-symbols-outlined text-[16px]">add</span>Nova</button></div>
+        <div class="overflow-x-auto"><table class="w-full min-w-[500px]"><thead class="bg-white/5 text-on-surface-variant text-[11px] font-label-caps"><tr><th class="px-lg py-md text-left">Fornecedor</th><th class="px-lg py-md text-left hidden md:table-cell">Vencimento</th><th class="px-lg py-md text-right">Valor</th><th class="px-lg py-md">Status</th></tr></thead><tbody>${payRows}</tbody></table></div>
       </div>
       <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col justify-between">
         <h3 class="font-h3 text-on-surface mb-md">Análise Comparativa</h3>
         <div class="flex items-end gap-sm flex-1">${compBars}</div>
-        <div class="pt-md border-t border-white/5 grid grid-cols-2 gap-md mt-md">
-          <div><p class="text-[10px] text-on-surface-variant font-label-caps">Líquido Previsto</p><p class="font-data-mono text-primary-container font-bold">R$ 1.842k</p></div>
-          <div class="text-right"><p class="text-[10px] text-on-surface-variant font-label-caps">Variação Anual</p><p class="font-data-mono font-bold">+24.8%</p></div>
-        </div>
       </div>
-    </div>`;
+    </div></div>`;
   },
 
   relatorios() {

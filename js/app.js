@@ -380,6 +380,76 @@ const App = {
        <button class="btn btn-danger" onclick="DB.deleteCustomer(${id});App.closeModal();App.page=null;App.route();App.toast('Cliente excluído')">Excluir</button>`);
   },
 
+  /* ── Transactions CRUD ── */
+  addTransaction() {
+    this.openModal('Nova Transação', UI.transactionForm(),
+      `<button class="btn btn-ghost" onclick="App.closeModal()">Cancelar</button>
+       <button class="btn btn-primary" onclick="document.getElementById('t-form').requestSubmit()"><span class="material-symbols-outlined text-[16px]">save</span>Salvar</button>`);
+  },
+  editTransaction(id) {
+    const t = DB.transaction(id); if (!t) return;
+    this.openModal('Editar Transação', UI.transactionForm(t),
+      `<div class="flex-1"><button class="btn btn-danger" onclick="App.deleteTransaction(${id})"><span class="material-symbols-outlined text-[16px]">delete</span>Excluir</button></div>
+       <button class="btn btn-ghost" onclick="App.closeModal()">Cancelar</button>
+       <button class="btn btn-primary" onclick="document.getElementById('t-form').requestSubmit()"><span class="material-symbols-outlined text-[16px]">save</span>Salvar</button>`);
+  },
+  saveTransaction(e) {
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target));
+    d.value = +d.value;
+    if (d.id) { DB.updateTransaction(d.id, d); this.toast('Transação atualizada!'); }
+    else { delete d.id; DB.addTransaction(d); this.toast('Transação salva!'); }
+    this.closeModal(); this.page = null; this.route();
+  },
+  deleteTransaction(id) {
+    if (confirm('Excluir esta transação?')) {
+      DB.deleteTransaction(id); this.closeModal(); this.page = null; this.route(); this.toast('Excluída');
+    }
+  },
+
+  /* ── Payables CRUD ── */
+  addPayable() {
+    this.openModal('Nova Conta a Pagar', UI.payableForm(),
+      `<button class="btn btn-ghost" onclick="App.closeModal()">Cancelar</button>
+       <button class="btn btn-primary" onclick="document.getElementById('p-form').requestSubmit()"><span class="material-symbols-outlined text-[16px]">save</span>Salvar</button>`);
+  },
+  editPayable(id) {
+    const p = DB.payable(id); if (!p) return;
+    this.openModal('Editar Conta', UI.payableForm(p),
+      `<div class="flex-1"><button class="btn btn-danger" onclick="App.deletePayable(${id})"><span class="material-symbols-outlined text-[16px]">delete</span>Excluir</button></div>
+       <button class="btn btn-ghost" onclick="App.closeModal()">Cancelar</button>
+       <button class="btn btn-primary" onclick="document.getElementById('p-form').requestSubmit()"><span class="material-symbols-outlined text-[16px]">save</span>Salvar</button>`);
+  },
+  savePayable(e) {
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target));
+    d.value = +d.value;
+    if (d.id) { DB.updatePayable(d.id, d); this.toast('Conta atualizada!'); }
+    else { delete d.id; DB.addPayable(d); this.toast('Conta salva!'); }
+    this.closeModal(); this.page = null; this.route();
+  },
+  deletePayable(id) {
+    if (confirm('Excluir esta conta?')) {
+      DB.deletePayable(id); this.closeModal(); this.page = null; this.route(); this.toast('Excluída');
+    }
+  },
+
+  /* ── PDF Report ── */
+  generatePdfReport() {
+    this.toast('Gerando PDF...', '');
+    const element = document.getElementById('finance-report-area');
+    const opt = {
+      margin:       10,
+      filename:     'relatorio_financeiro.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save().then(() => {
+      this.toast('PDF baixado com sucesso!');
+    });
+  },
+
   /* ── CRM Funnel Click — show customers by status ── */
   showCrmByStatus(status) {
     const stLabels = {'new-lead':'Novos Leads','test-drive':'Test-Drives','negotiation':'Em Negociação','proposal':'Propostas','closed':'Fechados do Mês'};

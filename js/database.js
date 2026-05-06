@@ -1,11 +1,7 @@
-/* ═══ DATABASE — Daniel Veículos (Firebase Edition) ═══
- * Persistência real via Firebase Realtime Database
- * Sincronização automática entre dispositivos
- */
+/* ═══ DATABASE — Daniel Veículos (Firebase Edition) ═══ */
 'use strict';
 
 const DB = (() => {
-  // CONFIGURAÇÃO DO FIREBASE
   const firebaseConfig = {
     apiKey: "AIzaSyDz6B2De-7CiQWQyPMyC4_niW6Wm1qc-XA",
     authDomain: "meusistemacadastro-d7d10.firebaseapp.com",
@@ -16,20 +12,17 @@ const DB = (() => {
     appId: "1:1034148971946:web:01dd348cfac2bcc9a4d7d3"
   };
 
-  // Inicializa Firebase
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   const rdb = firebase.database();
 
   const KEYS = {
-    vehicles:  'dv_vehicles',
-    customers: 'dv_customers',
-    finance:   'dv_finance',
-    notifs:    'dv_notifs',
+    vehicles:     'dv_vehicles',
+    customers:    'dv_customers',
+    transactions: 'dv_transactions',
+    payables:     'dv_payables',
+    notifs:       'dv_notifs',
   };
 
-  /* ── Storage Helpers ── */
   function load(key, fallback) {
     try {
       const raw = localStorage.getItem(key);
@@ -39,85 +32,52 @@ const DB = (() => {
 
   function save(key, data) {
     try {
-      // Salva local para resposta rápida
       localStorage.setItem(key, JSON.stringify(data));
-      
-      // Salva no Firebase
       const path = key.replace('dv_', '');
       rdb.ref(path).set(data);
     } catch(e) { console.error('Storage error:', e); }
   }
 
-  /* ── Sincronização em Tempo Real ── */
   function setupSync() {
-    // Escuta veículos
-    rdb.ref('vehicles').on('value', snapshot => {
-      const data = snapshot.val();
-      if (data) {
-        localStorage.setItem(KEYS.vehicles, JSON.stringify(data));
-        window.dispatchEvent(new CustomEvent('db-updated'));
-      }
-    });
-
-    // Escuta clientes
-    rdb.ref('customers').on('value', snapshot => {
-      const data = snapshot.val();
-      if (data) {
-        localStorage.setItem(KEYS.customers, JSON.stringify(data));
-        window.dispatchEvent(new CustomEvent('db-updated'));
-      }
-    });
-
-    // Escuta notificações
-    rdb.ref('notifs').on('value', snapshot => {
-      const data = snapshot.val();
-      if (data) {
-        localStorage.setItem(KEYS.notifs, JSON.stringify(data));
-        window.dispatchEvent(new CustomEvent('db-updated'));
-      }
+    ['vehicles', 'customers', 'transactions', 'payables', 'notifs'].forEach(k => {
+      rdb.ref(k).on('value', snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          localStorage.setItem(KEYS[k], JSON.stringify(data));
+          window.dispatchEvent(new CustomEvent('db-updated'));
+        }
+      });
     });
   }
 
-  /* ── ID Generator ── */
-  function nextId(arr) {
-    return arr.length > 0 ? Math.max(...arr.map(i => i.id)) + 1 : 1;
-  }
-
-  /* ── Finance (calculado com base nos veículos) ── */
   function calcFinance() {
-    const vehicles = load(KEYS.vehicles, []);
-    const sold = vehicles.filter(v => v.status === 'sold');
-    const revenue = sold.reduce((s, v) => s + (v.price || 0), 0);
+    const txs = load(KEYS.transactions, []);
+    const pays = load(KEYS.payables, []);
+    
+    // Calcula totais reais
+    const revenue = txs.filter(t => t.status === 'completed').reduce((s, t) => s + (t.value || 0), 0);
+    const expenses = pays.filter(p => p.status === 'Pago').reduce((s, p) => s + (p.value || 0), 0);
+    const profit = revenue - expenses;
+    const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0;
+
     return {
-      cashFlow:      revenue + 1240500,
-      monthlyRevenue: revenue > 0 ? revenue : 450200,
-      revenueTarget: 530000,
-      totalExpenses: 180450,
-      expensePct:    40,
-      netMargin:     28.4,
-      taxes: [
-        {n:'IRPJ (Trimestral)', v:42100},
-        {n:'CSLL',              v:18250},
-        {n:'PIS/COFINS',        v:12400},
+      cashFlow:      profit,
+      monthlyRevenue: revenue,
+      totalExpenses: expenses,
+      netMargin:     margin,
+      salesData: [
+        {n:'Lucro Líquido', v:profit},
+        {n:'Total Receitas', v:revenue},
+        {n:'Total Despesas', v:expenses},
       ],
-      taxProv: 72750,
-      receivables: [
-        {client:'Ricardo Mendes', desc:'BMW 320i M-Sport 2023', due:'15 Out 2023', value:285000, status:'Aguardando'},
-        {client:'Sofia Almeida',  desc:'Porsche Macan S 2022',  due:'12 Out 2023', value:512400, status:'Compensando'},
-      ],
-      payables: [
-        {sup:'Tech Insurance S/A', desc:'Seguro Frota Mensal', due:'22 Out 2023', value:8450,  status:'Pendente'},
-        {sup:'Energia Solar SP',   desc:'Manutenção Mensal',   due:'25 Out 2023', value:1200,  status:'Agendado'},
-      ],
-      bars:[{m:'AGO',p:65},{m:'SET',p:78},{m:'OUT',p:92,cur:true},{m:'NOV',p:45,proj:true},{m:'DEZ',p:30,proj:true}],
+      receivables: txs.filter(t => t.status === 'proposal'),
+      payables: pays,
+      bars:[{m:'1',p:20},{m:'2',p:40},{m:'3',p:60,cur:true},{m:'4',p:80,proj:true},{m:'5',p:100,proj:true}], // Barras visuais simples
     };
   }
 
-  /* ── Public API ── */
   return {
-    init() { 
-      setupSync(); 
-    },
+    init() { setupSync(); },
 
     // ─ Vehicles ─
     vehicles(f = {}) {
@@ -134,8 +94,7 @@ const DB = (() => {
     addVehicle(d) {
       const arr = load(KEYS.vehicles, []);
       const v = { id: Date.now(), ...d, createdAt: new Date().toISOString() };
-      arr.unshift(v);
-      save(KEYS.vehicles, arr);
+      arr.unshift(v); save(KEYS.vehicles, arr);
       this.addNotif(`Veículo cadastrado: ${v.brand} ${v.model}`, 'Estoque atualizado');
       return v;
     },
@@ -144,13 +103,9 @@ const DB = (() => {
       const i = arr.findIndex(v => String(v.id) === String(id));
       if (i < 0) return null;
       arr[i] = { ...arr[i], ...d, updatedAt: new Date().toISOString() };
-      save(KEYS.vehicles, arr);
-      return arr[i];
+      save(KEYS.vehicles, arr); return arr[i];
     },
-    deleteVehicle(id) {
-      const arr = load(KEYS.vehicles,[]).filter(v => String(v.id) !== String(id));
-      save(KEYS.vehicles, arr);
-    },
+    deleteVehicle(id) { save(KEYS.vehicles, load(KEYS.vehicles,[]).filter(v => String(v.id) !== String(id))); },
 
     // ─ Customers ─
     customers(f = {}) {
@@ -166,8 +121,7 @@ const DB = (() => {
     addCustomer(d) {
       const arr = load(KEYS.customers, []);
       const c = { id: Date.now(), ...d, lastContact: 'Agora', createdAt: new Date().toISOString() };
-      arr.unshift(c);
-      save(KEYS.customers, arr);
+      arr.unshift(c); save(KEYS.customers, arr);
       this.addNotif(`Novo cliente: ${c.name}`, 'CRM atualizado');
       return c;
     },
@@ -176,13 +130,46 @@ const DB = (() => {
       const i = arr.findIndex(c => String(c.id) === String(id));
       if (i < 0) return null;
       arr[i] = { ...arr[i], ...d, lastContact: 'Agora', updatedAt: new Date().toISOString() };
-      save(KEYS.customers, arr);
-      return arr[i];
+      save(KEYS.customers, arr); return arr[i];
     },
-    deleteCustomer(id) {
-      const arr = load(KEYS.customers,[]).filter(c => String(c.id) !== String(id));
-      save(KEYS.customers, arr);
+    deleteCustomer(id) { save(KEYS.customers, load(KEYS.customers,[]).filter(c => String(c.id) !== String(id))); },
+
+    // ─ Transactions ─
+    transactions() { return load(KEYS.transactions, []); },
+    transaction(id) { return load(KEYS.transactions,[]).find(t => String(t.id) === String(id)); },
+    addTransaction(d) {
+      const arr = load(KEYS.transactions, []);
+      const t = { id: Date.now(), ...d, createdAt: new Date().toISOString() };
+      arr.unshift(t); save(KEYS.transactions, arr);
+      this.addNotif(`Transação registrada`, Fmt.moneyShort(t.value));
+      return t;
     },
+    updateTransaction(id, d) {
+      const arr = load(KEYS.transactions, []);
+      const i = arr.findIndex(t => String(t.id) === String(id));
+      if (i < 0) return null;
+      arr[i] = { ...arr[i], ...d, updatedAt: new Date().toISOString() };
+      save(KEYS.transactions, arr); return arr[i];
+    },
+    deleteTransaction(id) { save(KEYS.transactions, load(KEYS.transactions,[]).filter(t => String(t.id) !== String(id))); },
+
+    // ─ Payables ─
+    payables() { return load(KEYS.payables, []); },
+    payable(id) { return load(KEYS.payables,[]).find(p => String(p.id) === String(id)); },
+    addPayable(d) {
+      const arr = load(KEYS.payables, []);
+      const p = { id: Date.now(), ...d, createdAt: new Date().toISOString() };
+      arr.unshift(p); save(KEYS.payables, arr);
+      return p;
+    },
+    updatePayable(id, d) {
+      const arr = load(KEYS.payables, []);
+      const i = arr.findIndex(p => String(p.id) === String(id));
+      if (i < 0) return null;
+      arr[i] = { ...arr[i], ...d, updatedAt: new Date().toISOString() };
+      save(KEYS.payables, arr); return arr[i];
+    },
+    deletePayable(id) { save(KEYS.payables, load(KEYS.payables,[]).filter(p => String(p.id) !== String(id))); },
 
     // ─ Notifications ─
     notifications()   { return load(KEYS.notifs, []); },
@@ -190,8 +177,7 @@ const DB = (() => {
     addNotif(title, desc) {
       const arr = load(KEYS.notifs, []);
       arr.unshift({ id: Date.now(), title, desc, time: 'Agora', read: false });
-      if (arr.length > 50) arr.pop();
-      save(KEYS.notifs, arr);
+      if (arr.length > 50) arr.pop(); save(KEYS.notifs, arr);
     },
     markAllRead() {
       const arr = load(KEYS.notifs,[]).map(n => ({ ...n, read: true }));
@@ -220,7 +206,7 @@ const DB = (() => {
       return {
         monthlySales:  Fmt.moneyShort(fin.monthlyRevenue),
         activeClients: cl.length,
-        stockTurnover: '22 dias',
+        stockTurnover: '0 dias',
         lotVehicles:   s.total,
         newLeads:      cl.filter(c => c.status === 'new-lead').length,
         testDrives:    cl.filter(c => c.status === 'test-drive').length,
@@ -229,29 +215,16 @@ const DB = (() => {
       };
     },
     weekly() {
-      return [{d:'SEG',t:60,a:40},{d:'TER',t:80,a:70},{d:'QUA',t:45,a:25},
-              {d:'QUI',t:95,a:85},{d:'SEX',t:75,a:55},{d:'SAB',t:100,a:90},{d:'DOM',t:30,a:15}];
+      return [{d:'SEG',t:0,a:0},{d:'TER',t:0,a:0},{d:'QUA',t:0,a:0},{d:'QUI',t:0,a:0},{d:'SEX',t:0,a:0},{d:'SAB',t:0,a:0},{d:'DOM',t:0,a:0}];
     },
     aiInsights() {
       return [
-        {cat:'ESTOQUE', text:'Alta demanda por SUVs híbridos detectada. Considere aumentar estoque de modelos Volvo ou Toyota.'},
-        {cat:'CRM',     text:'3 leads de alto valor estão sem contato há mais de 48h. Priorize o follow-up da BMW M3.'},
-        {cat:'FINANCEIRO', text:'Projeção de caixa aponta possibilidade de reinvestimento em vitrine digital no próximo trimestre.'},
+        {cat:'SISTEMA', text:'Sistema inicializado e pronto para operação. Cadastre veículos e clientes para ver os insights.'},
       ];
-    },
-    transactions() {
-      const sold = load(KEYS.vehicles,[]).filter(v => v.status === 'sold').slice(0,5);
-      return sold.map(v => ({
-        vehicle: `${v.brand} ${v.model}`,
-        client:  '—',
-        status:  'completed',
-        value:   v.price,
-      }));
     },
   };
 })();
 
-/* ── Formatter global ── */
 const Fmt = {
   money:      v => 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
   moneyShort: v => 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
