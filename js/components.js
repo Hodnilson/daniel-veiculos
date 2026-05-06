@@ -164,15 +164,30 @@ const UI = {
         <div class="form-group"><label class="form-label">Placa</label><input name="plate" value="${v.plate||''}" placeholder="ABC-1D23"></div>
         <div class="form-group"><label class="form-label">Status</label><select name="status" onchange="document.getElementById('v-sold-to-group').style.display=this.value==='sold'?'block':'none'">${opt(['available','reserved','sold','vitrine','proposal'], v.status)}</select></div>
       </div>
-      <div class="form-group" id="v-sold-to-group" style="display:${v.status==='sold'?'block':'none'}">
+      <div class="form-group" id="v-sold-to-group" style="display:${v.status==='sold'?'block':'none'};position:relative;">
         <label class="form-label">Vendido para *</label>
-        <select name="soldTo" style="width:100%;background:#292a2a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 13px;color:#e3e2e2;font-size:14px;outline:none;font-family:Inter">
-          <option value="">-- Selecione o Cliente --</option>
-          ${optCl}
-        </select>
+        <input type="hidden" name="soldTo" id="v-sold-to" value="${v.soldTo||''}">
+        <input type="text" id="v-sold-to-search" placeholder="Buscar cliente por nome..." autocomplete="off"
+          value="${v.soldTo ? (DB.customer(v.soldTo)?.name || '') : ''}"
+          onfocus="document.getElementById('v-sold-list').style.display='block'" 
+          onkeyup="UI._filterSoldClients(this.value)"
+          style="width:100%;background:#292a2a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 13px;color:#e3e2e2;font-size:14px;outline:none;font-family:Inter">
+        <div id="v-sold-list" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1f2020;border:1px solid rgba(255,255,255,.2);border-radius:8px;max-height:180px;overflow-y:auto;z-index:9999;margin-top:4px;box-shadow:0 10px 25px rgba(0,0,0,0.5)">
+          ${cl.map(c => `<div class="v-client-item hover:bg-white/5" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);color:#e3e2e2;font-size:13px" onclick="document.getElementById('v-sold-to').value='${c.id}';document.getElementById('v-sold-to-search').value='${c.name}';this.parentNode.style.display='none'">${c.name}</div>`).join('')}
+          <div class="v-client-empty" style="display:none;padding:10px 14px;color:#baccb0;font-size:13px;text-align:center">Nenhum cliente encontrado</div>
+        </div>
         <p style="font-size:11px;color:#facc15;margin-top:6px">Se o cliente não estiver na lista, <a href="javascript:void(0)" onclick="App.closeModal();setTimeout(()=>App.addCustomer(), 300)" style="text-decoration:underline;color:#facc15">cadastre-o primeiro no CRM</a>.</p>
       </div>
-    </form>`;
+    </form>
+    <script>
+      // Fecha a lista se clicar fora
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#v-sold-to-group')) {
+          const list = document.getElementById('v-sold-list');
+          if (list) list.style.display = 'none';
+        }
+      });
+    </script>`;
   },
 
   async _previewVehiclePhoto(input) {
@@ -219,6 +234,18 @@ const UI = {
     reader.readAsDataURL(file);
   },
 
+
+  _filterSoldClients(q) {
+    const term = q.toLowerCase();
+    let hasVis = false;
+    document.querySelectorAll('.v-client-item').forEach(el => {
+      const match = el.textContent.toLowerCase().includes(term);
+      el.style.display = match ? 'block' : 'none';
+      if (match) hasVis = true;
+    });
+    const empty = document.querySelector('.v-client-empty');
+    if (empty) empty.style.display = hasVis ? 'none' : 'block';
+  },
 
   /* ─── Customer Form ─── */
   customerForm(c) {
