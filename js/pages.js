@@ -1,0 +1,188 @@
+'use strict';
+const Pages = {
+  dashboard() {
+    const k=DB.kpi(), wp=DB.weekly(), txs=DB.transactions();
+    const bars=wp.map(d=>`<div class="flex flex-col items-center gap-xs flex-1"><div class="w-full bg-primary-container/20 rounded-t relative" style="height:${d.t}px"><div class="absolute bottom-0 w-full bg-primary-container rounded-t" style="height:${d.a}px"></div></div><span class="text-label-caps text-on-surface-variant font-label-caps text-[10px]">${d.d}</span></div>`).join('');
+    const txRows=txs.length ? txs.map(t=>UI.txRow(t.vehicle,t.client,t.status==='completed'?'Concluído':'Em Proposta',Fmt.moneyShort(t.value))).join('') : `<tr><td colspan="4" class="px-lg py-xl text-center text-on-surface-variant">Nenhuma transação registrada</td></tr>`;
+    return `<div class="grid grid-cols-2 lg:grid-cols-4 gap-md">
+      ${UI.kpi('Receita Mensal',k.monthlySales,'+12.5%','payments',true)}
+      ${UI.kpi('Clientes Ativos',k.activeClients,'Total','group',false)}
+      ${UI.kpi('Giro de Estoque',k.stockTurnover,'Média','sync',false)}
+      ${UI.kpi('Veículos em Pátio',k.lotVehicles,'Unidades','inventory_2',false)}
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-md">
+      <div class="glass-panel p-lg rounded-xl border border-white/5">
+        <div class="flex justify-between items-center mb-lg">
+          <div><h4 class="font-h3 text-h3 text-on-surface">Performance Semanal</h4><p class="text-on-surface-variant text-sm">Comparativo de visitas vs. negociações</p></div>
+        </div>
+        <div class="flex items-end justify-between gap-sm" style="height:120px">${bars}</div>
+        <div class="flex gap-lg mt-md"><div class="flex items-center gap-xs"><div class="w-3 h-3 rounded-sm bg-primary-container"></div><span class="text-xs text-on-surface-variant">Negociações</span></div><div class="flex items-center gap-xs"><div class="w-3 h-3 rounded-sm bg-primary-container/20"></div><span class="text-xs text-on-surface-variant">Visitas</span></div></div>
+      </div>
+      <div class="glass-panel rounded-xl border border-white/5 flex flex-col">
+        <div class="p-lg border-b border-white/5"><h4 class="font-h3 text-on-surface">Funil CRM Hoje</h4></div>
+        <div class="p-lg grid grid-cols-2 gap-md flex-1">
+          ${UI.kpi('Novos Leads',k.newLeads,'Hoje','person_add',false)}
+          ${UI.kpi('Test-Drives',k.testDrives,'Agendados','electric_car',false)}
+          ${UI.kpi('Negociações',k.negotiations,'Ativas','handshake',false)}
+          ${UI.kpi('Vendas Mês',k.monthlyClosed,'Fechadas','trophy',true)}
+        </div>
+        <div class="px-lg pb-lg"><button class="w-full py-sm border border-primary-container text-primary-container font-bold rounded-lg hover:bg-primary-container/10 transition-all" onclick="location.hash='#/crm'">Acessar CRM Completo →</button></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-md pb-xl">
+      <div class="glass-panel rounded-xl overflow-hidden border border-white/5">
+        <div class="px-lg py-md border-b border-white/10 flex justify-between items-center">
+          <h4 class="font-h3 text-on-surface">Transações Recentes</h4>
+          <button class="text-primary-container text-label-caps font-label-caps hover:underline" onclick="location.hash='#/financeiro'">Ver Tudo →</button>
+        </div>
+        <table class="w-full"><thead class="bg-surface-container-high/50 text-label-caps text-on-surface-variant font-label-caps"><tr><th class="px-lg py-md text-left">Veículo</th><th class="px-lg py-md text-left hidden md:table-cell">Cliente</th><th class="px-lg py-md text-left">Status</th><th class="px-lg py-md text-right">Valor</th></tr></thead><tbody class="divide-y divide-white/5">${txRows}</tbody></table>
+      </div>
+      <div class="glass-panel rounded-xl border border-white/5 p-lg">
+        <h4 class="font-h3 text-on-surface mb-md">Atividade Recente</h4>
+        <div id="dash-activity" class="space-y-sm">${UI.recentActivity()}</div>
+      </div>
+    </div>`;
+  },
+
+  estoque() {
+    const br=DB.brands(), v=DB.vehicles(), s=DB.stats();
+    return `<div class="grid grid-cols-4 gap-md mb-md">
+      <div class="glass-panel card-interactive p-md rounded-lg border border-white/5 text-center" onclick="App.showVehiclesByStatus('')"><p class="text-label-caps text-on-surface-variant font-label-caps">Total</p><p class="text-h3 font-h3 text-on-surface">${s.total}</p></div>
+      <div class="glass-panel card-interactive p-md rounded-lg border border-primary-container/20 text-center" onclick="App.showVehiclesByStatus('available')"><p class="text-label-caps text-primary-container font-label-caps">Disponíveis</p><p class="text-h3 font-h3 text-primary-container">${s.available}</p></div>
+      <div class="glass-panel card-interactive p-md rounded-lg border border-yellow-500/20 text-center" onclick="App.showVehiclesByStatus('reserved')"><p class="text-label-caps text-yellow-400 font-label-caps">Reservados</p><p class="text-h3 font-h3 text-yellow-400">${s.reserved}</p></div>
+      <div class="glass-panel card-interactive p-md rounded-lg border border-blue-500/20 text-center" onclick="App.showVehiclesByStatus('sold')"><p class="text-label-caps text-blue-400 font-label-caps">Vendidos</p><p class="text-h3 font-h3 text-blue-400">${s.sold}</p></div>
+    </div>
+    <div class="glass-panel p-md rounded-xl border border-white/5 flex flex-wrap gap-md items-center mb-md">
+      <div class="flex items-center bg-surface-container px-md py-xs rounded-full border border-white/5 flex-1 min-w-[180px]">
+        <span class="material-symbols-outlined text-on-surface-variant mr-sm text-[18px]">search</span>
+        <input id="f-search" class="bg-transparent border-none focus:ring-0 text-sm w-full text-on-surface outline-none placeholder:text-on-surface-variant" placeholder="Buscar marca, modelo, placa..." oninput="App.filterVehicles()">
+      </div>
+      <select id="f-brand" class="bg-surface-container border border-white/10 rounded-lg text-sm text-on-surface px-md py-xs outline-none" onchange="App.filterVehicles()">
+        <option value="">Todas Marcas</option>${br.map(b=>`<option>${b}</option>`).join('')}
+      </select>
+      <select id="f-status" class="bg-surface-container border border-white/10 rounded-lg text-sm text-on-surface px-md py-xs outline-none" onchange="App.filterVehicles()">
+        <option value="">Todos Status</option>
+        <option value="available">Disponível</option><option value="reserved">Reservado</option>
+        <option value="sold">Vendido</option><option value="vitrine">Vitrine</option><option value="proposal">Proposta</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="App.addVehicle()"><span class="material-symbols-outlined text-[16px]">add</span>Novo Veículo</button>
+    </div>
+    <div id="v-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md">${v.map(x=>UI.vehicleCard(x)).join('')}</div>`;
+  },
+
+  crm() {
+    const k=DB.kpi(), cl=DB.customers();
+    return `<div class="grid grid-cols-2 md:grid-cols-4 gap-md">
+      ${UI.funnel('NOVOS LEADS',k.newLeads,'person_add',Math.min(k.newLeads*3,100),'Leads esta semana',false,'new-lead')}
+      ${UI.funnel('TEST-DRIVES',k.testDrives,'electric_car',Math.min(k.testDrives*5,100),'Agendados',false,'test-drive')}
+      ${UI.funnel('NEGOCIAÇÃO',k.negotiations,'handshake',Math.min(k.negotiations*8,100),'Em andamento',false,'negotiation')}
+      ${UI.funnel('FECHADOS MÊS',k.monthlyClosed,'trophy',Math.min(k.monthlyClosed*4,100),'Meta: 40 unidades',true,'closed')}
+    </div>
+    <div class="glass-panel p-md rounded-xl border border-white/5 flex flex-wrap gap-md items-center">
+      <div class="flex items-center bg-surface-container px-md py-xs rounded-full border border-white/5 flex-1 min-w-[180px]">
+        <span class="material-symbols-outlined text-on-surface-variant mr-sm text-[18px]">search</span>
+        <input id="c-search" class="bg-transparent border-none focus:ring-0 text-sm w-full text-on-surface outline-none placeholder:text-on-surface-variant" placeholder="Buscar cliente..." oninput="App.filterCustomers()">
+      </div>
+      <select id="c-status" class="bg-surface-container border border-white/10 rounded-lg text-sm text-on-surface px-md py-xs outline-none" onchange="App.filterCustomers()">
+        <option value="">Todos Status</option>
+        <option value="new-lead">Novo Lead</option><option value="test-drive">Test-Drive</option>
+        <option value="negotiation">Negociação</option><option value="proposal">Proposta</option><option value="closed">Vendido</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="App.addCustomer()"><span class="material-symbols-outlined text-[16px]">person_add</span>Novo Cliente</button>
+    </div>
+    <div id="crm-detail-panel"></div>
+    <div class="glass-panel rounded-xl overflow-hidden border border-white/5">
+      <table class="w-full text-left">
+        <thead class="bg-white/5 text-label-caps text-on-surface-variant font-label-caps">
+          <tr><th class="px-lg py-md">Cliente</th><th class="px-lg py-md hidden lg:table-cell">Cidade</th><th class="px-lg py-md hidden md:table-cell">Interesse</th><th class="px-lg py-md">Status</th><th class="px-lg py-md hidden md:table-cell">Contato</th><th class="px-lg py-md">Ações</th></tr>
+        </thead>
+        <tbody id="crm-body">${cl.map(c=>UI.crmRow(c)).join('')}</tbody>
+      </table>
+      <div class="px-lg py-md border-t border-white/5 flex justify-between items-center bg-surface-container-lowest">
+        <p class="text-xs text-on-surface-variant" id="crm-count">${cl.length} clientes</p>
+      </div>
+    </div>`;
+  },
+
+  financeiro() {
+    const f=DB.finance();
+    const recRows=f.receivables.map(r=>{
+      const sc=r.status==='Recebido'?'bg-primary-container/20 text-primary-container':r.status==='Aguardando'?'bg-yellow-500/10 text-yellow-400 status-pulse':'bg-surface-variant text-on-surface-variant';
+      return `<tr class="hover:bg-white/5 transition-colors border-b border-white/5"><td class="px-lg py-md"><div class="font-bold text-sm text-on-surface">${r.client}</div><div class="text-xs text-on-surface-variant">${r.desc}</div></td><td class="px-lg py-md text-sm font-data-mono">${r.due}</td><td class="px-lg py-md text-right font-data-mono font-bold text-primary-container">${Fmt.money(r.value)}</td><td class="px-lg py-md"><span class="${sc} px-sm py-1 rounded-full text-[10px] font-bold uppercase">${r.status}</span></td></tr>`;
+    }).join('');
+    const payRows=f.payables.map(p=>{
+      const sc=p.status==='Pendente'?'bg-error/10 text-error':'bg-surface-variant text-on-surface-variant';
+      const dc=p.status==='Pendente'?'text-error':'text-on-surface';
+      return `<tr class="hover:bg-white/5 transition-colors border-b border-white/5"><td class="px-lg py-md"><div class="font-bold text-sm text-on-surface">${p.sup}</div><div class="text-xs text-on-surface-variant">${p.desc}</div></td><td class="px-lg py-md text-sm font-data-mono ${dc}">${p.due}</td><td class="px-lg py-md text-right font-data-mono font-bold">${Fmt.money(p.value)}</td><td class="px-lg py-md"><span class="${sc} px-sm py-1 rounded-full text-[10px] font-bold uppercase">${p.status}</span></td></tr>`;
+    }).join('');
+    const compBars=f.bars.map(c=>`<div class="flex-1 flex flex-col items-center gap-xs"><div class="w-full rounded-t relative" style="height:80px;background:rgba(255,255,255,.05)"><div class="absolute bottom-0 w-full rounded-t ${c.cur?'bg-primary-container':c.proj?'bg-white/10 border-t-2 border-dashed border-primary-container/40':'bg-primary-container/40'} transition-all" style="height:${c.p}%"></div></div><span class="text-[10px] font-label-caps ${c.cur?'text-primary-container font-bold':'text-on-surface-variant'}">${c.m}</span></div>`).join('');
+    return `<div class="grid grid-cols-2 lg:grid-cols-4 gap-md">
+      ${UI.finKpi('Fluxo de Caixa',Fmt.money(f.cashFlow),'account_balance_wallet','text-primary-container',`<div class="flex items-center gap-xs text-primary-container text-sm"><span class="material-symbols-outlined text-[14px]">trending_up</span>+12.5% este mês</div>`)}
+      ${UI.finKpi('Receita Mensal',Fmt.money(f.monthlyRevenue),'payments','text-primary-container',`<div class="w-full bg-white/5 h-1 rounded-full"><div class="bg-primary-container h-full" style="width:85%"></div></div><p class="text-xs text-on-surface-variant">Meta: ${Fmt.money(f.revenueTarget)}</p>`)}
+      ${UI.finKpi('Despesas',Fmt.money(f.totalExpenses),'receipt_long','text-error',`<div class="w-full bg-white/5 h-1 rounded-full"><div class="bg-error h-full" style="width:${f.expensePct}%"></div></div><p class="text-xs text-on-surface-variant">${f.expensePct}% do orçamento</p>`)}
+      ${UI.finKpi('Margem Líquida',f.netMargin+'%','monitoring','text-primary-container','<span class="text-xs text-on-surface-variant">Performance Superior</span>')}
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+      <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col">
+        <h3 class="font-h3 text-on-surface mb-lg">Impostos Estimados</h3>
+        <div class="space-y-md flex-1">${f.taxes.map(t=>`<div class="flex justify-between p-md bg-white/5 rounded-lg"><span class="text-sm text-on-surface-variant">${t.n}</span><span class="font-data-mono font-bold">${Fmt.money(t.v)}</span></div>`).join('')}</div>
+        <div class="mt-lg p-md bg-primary-container/5 border border-primary-container/20 rounded-lg"><p class="text-xs text-primary-container font-label-caps mb-xs">Provisão Q3</p><p class="text-h2 font-h2 text-primary-container">${Fmt.money(f.taxProv)}</p></div>
+        <button class="mt-md w-full border border-primary-container text-primary-container py-sm rounded-lg hover:bg-primary-container/10 transition-all font-bold text-sm">Gerar Relatório Fiscal</button>
+      </div>
+      <div class="lg:col-span-2 glass-panel rounded-xl border border-white/5 overflow-hidden">
+        <div class="p-lg border-b border-white/5 flex justify-between items-center"><h3 class="font-h3 text-on-surface">Contas a Receber</h3></div>
+        <table class="w-full"><thead class="bg-white/5 text-on-surface-variant text-[11px] font-label-caps"><tr><th class="px-lg py-md text-left">Cliente</th><th class="px-lg py-md text-left hidden md:table-cell">Vencimento</th><th class="px-lg py-md text-right">Valor</th><th class="px-lg py-md">Status</th></tr></thead><tbody>${recRows}</tbody></table>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-md pb-xl">
+      <div class="lg:col-span-2 glass-panel rounded-xl border border-white/5 overflow-hidden">
+        <div class="p-lg border-b border-white/5"><h3 class="font-h3 text-on-surface">Contas a Pagar</h3></div>
+        <table class="w-full"><thead class="bg-white/5 text-on-surface-variant text-[11px] font-label-caps"><tr><th class="px-lg py-md text-left">Fornecedor</th><th class="px-lg py-md text-left hidden md:table-cell">Vencimento</th><th class="px-lg py-md text-right">Valor</th><th class="px-lg py-md">Status</th></tr></thead><tbody>${payRows}</tbody></table>
+      </div>
+      <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col justify-between">
+        <h3 class="font-h3 text-on-surface mb-md">Análise Comparativa</h3>
+        <div class="flex items-end gap-sm flex-1">${compBars}</div>
+        <div class="pt-md border-t border-white/5 grid grid-cols-2 gap-md mt-md">
+          <div><p class="text-[10px] text-on-surface-variant font-label-caps">Líquido Previsto</p><p class="font-data-mono text-primary-container font-bold">R$ 1.842k</p></div>
+          <div class="text-right"><p class="text-[10px] text-on-surface-variant font-label-caps">Variação Anual</p><p class="font-data-mono font-bold">+24.8%</p></div>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  relatorios() {
+    const brands=DB.brands(), vTotal=DB.vehicles().length, s=DB.stats(), k=DB.kpi();
+    const totalValue = DB.vehicles().reduce((sum,v) => sum + (v.price||0), 0);
+    const avgPrice = vTotal > 0 ? Math.round(totalValue / vTotal) : 0;
+    const avgKm = vTotal > 0 ? Math.round(DB.vehicles().reduce((sum,v) => sum + (v.km||0), 0) / vTotal) : 0;
+    return `<div class="grid grid-cols-1 md:grid-cols-3 gap-md mb-md">
+      ${UI.kpi('Valor Total Estoque',Fmt.moneyShort(totalValue),'Patrimônio','account_balance',true)}
+      ${UI.kpi('Preço Médio Veículo',Fmt.moneyShort(avgPrice),'Por unidade','price_check',false)}
+      ${UI.kpi('KM Médio Estoque',Fmt.km(avgKm),'Quilometragem','speed',false)}
+    </div>
+    <div class="glass-panel p-lg rounded-xl border border-white/5 mb-md">
+      <h4 class="font-h3 text-on-surface mb-lg">Performance por Marca</h4>
+      <div class="space-y-md">${brands.map(b=>{const c=DB.vehicles({brand:b}).length,p=Math.round(c/vTotal*100);return `<div class="flex items-center gap-md"><span class="text-sm font-bold w-36 text-on-surface">${b}</span><div class="flex-1 bg-white/5 h-2 rounded-full overflow-hidden"><div class="bg-primary-container h-full" style="width:${p}%"></div></div><span class="text-primary-container font-data-mono text-sm w-8 text-right">${c}</span></div>`;}).join('')}</div>
+    </div>
+    <div class="glass-panel p-lg rounded-xl border border-white/5 mb-md">
+      <h4 class="font-h3 text-on-surface mb-lg">Status do Estoque</h4>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-md">${[['Total','','#e3e2e2'],['Disponíveis','available','#39ff14'],['Reservados','reserved','#facc15'],['Vendidos','sold','#60a5fa'],['Vitrine','vitrine','#a855f7']].map(([l,st,c])=>{const n=st?DB.vehicles({status:st}).length:vTotal;return `<div class="bg-white/5 p-lg rounded-xl text-center border border-white/5 card-interactive" onclick="App.showStockByStatus('${st}')"><div class="text-h2 font-h2" style="color:${c}">${n}</div><p class="text-on-surface-variant text-sm mt-xs">${l}</p></div>`;}).join('')}</div>
+    </div>
+    <div id="stock-detail-panel"></div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-md mb-md">
+      ${UI.kpi('Clientes Ativos',k.activeClients,'Total CRM','group',false)}
+      ${UI.kpi('Em Negociação',k.negotiations,'Ativas','handshake',false)}
+      ${UI.kpi('Vendas do Mês',k.monthlyClosed,'Fechadas','emoji_events',true)}
+      ${UI.kpi('Test-Drives',k.testDrives,'Agendados','electric_car',false)}
+    </div>`;
+  },
+
+  vitrine() {
+    const cars=DB.vitrineVehicles();
+    return `<div class="glass-panel p-lg rounded-xl mb-md border border-primary-container/20 bg-primary-container/5 flex flex-wrap justify-between items-center gap-md">
+      <div><h3 class="font-h3 text-primary-container">Vitrine de Luxo</h3><p class="text-on-surface-variant text-sm">Veículos premium em destaque — clique para gerenciar</p></div>
+      <button class="btn btn-primary" onclick="App.addVehicle()"><span class="material-symbols-outlined text-[16px]">add</span>Publicar Veículo</button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md pb-xl">${cars.length ? cars.map(v=>UI.vehicleCard(v)).join('') : '<div class="col-span-full text-center py-xl text-on-surface-variant">Nenhum veículo em destaque. Adicione veículos com preço acima de R$1M ou status "vitrine".</div>'}</div>`;
+  },
+};
