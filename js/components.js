@@ -138,7 +138,7 @@ const UI = {
         <div id="v-photo-zone" onclick="document.getElementById('v-photo-input').click()"
           style="border:2px dashed rgba(57,255,20,.22);border-radius:12px;min-height:118px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s;overflow:hidden;background:rgba(57,255,20,.03)"
           onmouseenter="this.style.borderColor='rgba(57,255,20,.55)'" onmouseleave="this.style.borderColor='rgba(57,255,20,.22)'">
-          ${ep ? `<img src="${ep}" style="width:100%;height:118px;object-fit:cover">` : `<div style="text-align:center;padding:18px"><span class="material-symbols-outlined" style="font-size:36px;color:rgba(57,255,20,.45);font-variation-settings:'FILL' 1">add_photo_alternate</span><p style="color:#baccb0;font-size:13px;font-weight:600;margin-top:6px">Clique para adicionar fotos</p><p style="color:#3c4b35;font-size:11px">JPG, PNG, WEBP · Até 5 MB</p></div>`}
+          ${ep ? `<img src="${ep}" style="width:100%;height:118px;object-fit:cover">` : `<div style="text-align:center;padding:18px"><span class="material-symbols-outlined" style="font-size:36px;color:rgba(57,255,20,.45);font-variation-settings:'FILL' 1">add_photo_alternate</span><p style="color:#baccb0;font-size:13px;font-weight:600;margin-top:6px">Clique para adicionar fotos</p><p style="color:#3c4b35;font-size:11px">JPG, PNG, WEBP · Suporta Alta Definição (HD)</p></div>`}
         </div>
         <input id="v-photo-input" type="file" accept="image/*" style="display:none" onchange="UI._previewVehiclePhoto(this)">
       </div>
@@ -205,7 +205,7 @@ const UI = {
         <div id="c-avatar-preview" onclick="document.getElementById('c-photo-input').click()" title="Clique para trocar a foto"
           style="width:74px;height:74px;border-radius:50%;border:2px solid rgba(57,255,20,.35);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#39FF14;cursor:pointer;flex-shrink:0;transition:border-color .2s;overflow:hidden;background:${ep ? 'url('+ep+') center/cover' : 'rgba(57,255,20,.1)'}"
           onmouseenter="this.style.borderColor='#39FF14'" onmouseleave="this.style.borderColor='rgba(57,255,20,.35)'">${ep ? '' : ini}</div>
-        <div><p style="font-weight:700;color:#e3e2e2;font-size:14px">Foto do Cliente</p><p style="color:#baccb0;font-size:12px;margin-top:3px">Clique no avatar para carregar</p><p style="color:#3c4b35;font-size:11px;margin-top:1px">JPG, PNG, WEBP · Até 5 MB</p></div>
+        <div><p style="font-weight:700;color:#e3e2e2;font-size:14px">Foto do Cliente</p><p style="color:#baccb0;font-size:12px;margin-top:3px">Clique no avatar para carregar</p><p style="color:#3c4b35;font-size:11px;margin-top:1px">JPG, PNG, WEBP · Alta Definição (HD)</p></div>
         <input id="c-photo-input" type="file" accept="image/*" style="display:none" onchange="UI._previewCustomerPhoto(this)">
       </div>
       <div class="form-row">
