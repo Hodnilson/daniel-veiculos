@@ -52,9 +52,27 @@ const DB = (() => {
 
   async function uploadPhoto(file) {
     if (!firebase.storage) throw new Error('Storage indisponível');
-    const storageRef = firebase.storage().ref(`photos/${Date.now()}_${file.name}`);
-    await storageRef.put(file);
-    return await storageRef.getDownloadURL();
+    return new Promise((resolve, reject) => {
+      const storageRef = firebase.storage().ref(`photos/${Date.now()}_${file.name||'foto.jpg'}`);
+      const uploadTask = storageRef.put(file);
+      
+      const timeout = setTimeout(() => {
+        uploadTask.cancel();
+        reject(new Error('Timeout: O servidor demorou muito para responder.'));
+      }, 6000);
+
+      uploadTask.on('state_changed', 
+        null, 
+        err => { clearTimeout(timeout); reject(err); }, 
+        async () => {
+          clearTimeout(timeout);
+          try {
+            const url = await uploadTask.snapshot.ref.getDownloadURL();
+            resolve(url);
+          } catch(e) { reject(e); }
+        }
+      );
+    });
   }
 
   function calcFinance() {
