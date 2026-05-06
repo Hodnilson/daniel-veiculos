@@ -308,6 +308,45 @@ const App = {
        <button class="btn btn-primary" onclick="App.closeModal();setTimeout(()=>App.editVehicle('${id}'),200)">Editar</button>`);
   },
 
+  printFichaVehicle(id) {
+    const v = DB.vehicle(id); if (!v) return;
+    this.toast('Gerando Ficha...', '');
+    const div = document.createElement('div');
+    div.style.padding = '40px';
+    div.style.background = '#0a0a0a';
+    div.style.color = '#fff';
+    div.style.fontFamily = 'Manrope, sans-serif';
+    div.innerHTML = `
+      <h1 style="font-size:32px;color:#39FF14;text-align:center;margin-bottom:10px;font-weight:800">DANIEL VEÍCULOS</h1>
+      <p style="text-align:center;color:#baccb0;margin-bottom:30px;letter-spacing:2px">FICHA TÉCNICA OFICIAL</p>
+      ${v.photo ? `<img src="${v.photo}" style="width:100%;height:350px;object-fit:cover;border-radius:16px;margin-bottom:30px">` : ''}
+      <h2 style="font-size:42px;text-align:center;margin-bottom:10px">${v.brand} ${v.model}</h2>
+      <p style="text-align:center;color:#baccb0;font-size:20px;margin-bottom:30px">${v.year} · ${v.color}</p>
+      <div style="background:rgba(255,255,255,0.05);padding:24px;border-radius:16px;margin-bottom:30px">
+        <h3 style="color:#39FF14;font-size:36px;text-align:center;margin:0">${Fmt.money(v.price)}</h3>
+      </div>
+      <table style="width:100%;text-align:left;font-size:18px;border-collapse:collapse">
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1)"><td style="padding:15px;color:#baccb0">Quilometragem</td><td style="padding:15px;font-weight:bold">${Fmt.km(v.km)}</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1)"><td style="padding:15px;color:#baccb0">Combustível</td><td style="padding:15px;font-weight:bold">${v.fuel||'-'}</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1)"><td style="padding:15px;color:#baccb0">Transmissão</td><td style="padding:15px;font-weight:bold">${v.trans||'-'}</td></tr>
+        <tr><td style="padding:15px;color:#baccb0">Placa</td><td style="padding:15px;font-weight:bold">${v.plate||'-'}</td></tr>
+      </table>
+      <div style="margin-top:50px;text-align:center;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1)">
+        <p style="font-size:14px;color:#baccb0">DANIEL VEÍCULOS - GESTÃO PREMIUM</p>
+      </div>
+    `;
+    const opt = {
+      margin:       0,
+      filename:     `Ficha_${v.model.replace(/\s/g,'_')}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(div).save().then(() => {
+      this.toast('Ficha gerada com sucesso!');
+    });
+  },
+
   saveVehicle(e) {
     e.preventDefault();
     const d = Object.fromEntries(new FormData(e.target));
@@ -328,6 +367,21 @@ const App = {
   },
 
   /* ── Customer CRUD ── */
+  async fetchCep(cep) {
+    cep = cep.replace(/\D/g, '');
+    if (cep.length === 8) {
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await res.json();
+        if (!data.erro) {
+          const cityEl = document.getElementById('c-city');
+          if (cityEl) cityEl.value = `${data.localidade} - ${data.uf}`;
+          this.toast('Endereço encontrado!');
+        }
+      } catch (e) { console.error('ViaCEP erro:', e); }
+    }
+  },
+
   filterCustomers() {
     const f = {
       search: document.getElementById('c-search')?.value || '',

@@ -206,11 +206,14 @@ const UI = {
         <div class="form-group"><label class="form-label">CPF</label><input name="cpf" value="${c.cpf||''}" placeholder="000.000.000-00"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Cidade</label><input name="city" value="${c.city||''}" placeholder="São Paulo, SP"></div>
-        <div class="form-group"><label class="form-label">Veículo de Interesse</label><input name="interest" value="${c.interest||''}" placeholder="BMW M4"></div>
+        <div class="form-group"><label class="form-label">CEP</label><input name="cep" id="c-cep" value="${c.cep||''}" placeholder="00000-000" onblur="if(window.App) App.fetchCep(this.value)"></div>
+        <div class="form-group"><label class="form-label">Cidade / Estado</label><input name="city" id="c-city" value="${c.city||''}" placeholder="Ex: São Paulo - SP"></div>
       </div>
       <div class="form-row">
+        <div class="form-group"><label class="form-label">Veículo de Interesse</label><input name="interest" value="${c.interest||''}" placeholder="BMW M4"></div>
         <div class="form-group"><label class="form-label">Status CRM</label><select name="status">${optSt}</select></div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label class="form-label">Canal de Contato</label><select name="via">${optVi}</select></div>
       </div>
     </form>`;
@@ -325,7 +328,10 @@ const UI = {
       ${f('Combustível', v.fuel || '—')} ${f('Transmissão', v.trans || '—')}
       ${f('Placa', v.plate || '—')} ${f('Status', stMap[v.status] || v.status)}
       ${v.createdAt ? f('Cadastrado em', Fmt.date(v.createdAt)) : ''}
-    </div>`;
+    </div>
+    <button class="w-full mt-md btn btn-primary flex justify-center items-center gap-sm" onclick="App.printFichaVehicle(${v.id})">
+      <span class="material-symbols-outlined text-[18px]">print</span> Gerar Ficha de Vidro (PDF)
+    </button>`;
   },
 
   /* ─── Customer Detail ─── */

@@ -1,313 +1,806 @@
 <!DOCTYPE html>
 <html class="dark" lang="pt-BR">
+
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Daniel Veículos — Gestão Premium</title>
-<meta name="description" content="Plataforma de gestão automotiva premium Daniel Veículos."/>
-<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet"/>
-<script>
-tailwind.config={darkMode:'class',theme:{extend:{
-  colors:{'primary-container':'#39FF14','on-primary':'#053900','surface':'#121414','background':'#0A0A0A','surface-container':'#1f2020','surface-container-high':'#292a2a','surface-container-highest':'#343535','surface-container-low':'#1b1c1c','surface-container-lowest':'#0d0e0f','on-surface':'#e3e2e2','on-surface-variant':'#baccb0','outline':'#85967c','outline-variant':'#3c4b35','error':'#ffb4ab','error-container':'#93000a'},
-  fontFamily:{sans:['Inter','sans-serif']},
-  spacing:{xs:'4px',sm:'8px',md:'16px',lg:'24px',xl:'40px',gutter:'20px'}
-}}}
-</script>
-<style>
-*{box-sizing:border-box}
-body{background:#0A0A0A;color:#e3e2e2;font-family:Inter,sans-serif}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daniel Veículos — Gestão Premium</title>
+  <meta name="description" content="Plataforma de gestão automotiva premium Daniel Veículos." />
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
+    rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class', theme: {
+        extend: {
+          colors: { 'primary-container': '#39FF14', 'on-primary': '#053900', 'surface': '#121414', 'background': '#0A0A0A', 'surface-container': '#1f2020', 'surface-container-high': '#292a2a', 'surface-container-highest': '#343535', 'surface-container-low': '#1b1c1c', 'surface-container-lowest': '#0d0e0f', 'on-surface': '#e3e2e2', 'on-surface-variant': '#baccb0', 'outline': '#85967c', 'outline-variant': '#3c4b35', 'error': '#ffb4ab', 'error-container': '#93000a' },
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          spacing: { xs: '4px', sm: '8px', md: '16px', lg: '24px', xl: '40px', gutter: '20px' }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box
+    }
 
-/* ── Fundo vivo com blobs animados ── */
-@keyframes blobFloat1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,-30px) scale(1.08)}66%{transform:translate(-20px,20px) scale(.95)}}
-@keyframes blobFloat2{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-35px,25px) scale(1.05)}66%{transform:translate(20px,-15px) scale(.97)}}
-@keyframes blobFloat3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.06)}}
-.bg-blob{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none;z-index:0;}
-.bg-blob-1{width:650px;height:650px;top:-200px;left:-180px;background:radial-gradient(circle,rgba(57,255,20,.09) 0%,transparent 68%);animation:blobFloat1 14s ease-in-out infinite;}
-.bg-blob-2{width:550px;height:550px;bottom:-160px;right:-140px;background:radial-gradient(circle,rgba(57,255,20,.06) 0%,transparent 68%);animation:blobFloat2 18s ease-in-out infinite;}
-.bg-blob-3{width:400px;height:400px;top:30%;right:15%;background:radial-gradient(circle,rgba(57,255,20,.04) 0%,transparent 65%);filter:blur(90px);animation:blobFloat1 22s ease-in-out infinite reverse;}
-.bg-blob-4{width:350px;height:350px;bottom:20%;left:20%;background:radial-gradient(circle,rgba(57,255,20,.03) 0%,transparent 65%);filter:blur(100px);animation:blobFloat2 26s ease-in-out infinite;}
-/* Malha sutil de linhas no fundo */
-.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(57,255,20,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(57,255,20,.025) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);}
+    body {
+      background: #0A0A0A;
+      color: #e3e2e2;
+      font-family: Inter, sans-serif
+    }
 
-.glass-panel{background:rgba(26,26,26,.65);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.material-symbols-outlined{font-family:'Material Symbols Outlined';font-variation-settings:'FILL' 0,'wght' 400;user-select:none;line-height:1;display:inline-block}
-.status-pulse{animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+    /* ── Fundo vivo com blobs animados ── */
+    @keyframes blobFloat1 {
 
-/* ── Card Interactive Hover — pula e brilha ── */
-.card-interactive{transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease;cursor:pointer}
-.card-interactive:hover{transform:translateY(-6px) scale(1.015);box-shadow:0 0 22px rgba(57,255,20,.18),0 8px 32px rgba(0,0,0,.3)}
-.card-interactive:active{transform:translateY(-2px) scale(1.005)}
-@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-.card-interactive::after{content:'';position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity .3s;pointer-events:none;background:linear-gradient(120deg,transparent 30%,rgba(57,255,20,.06) 50%,transparent 70%);background-size:200% 100%;animation:shimmer 3s infinite linear}
-.card-interactive:hover::after{opacity:1}
-.card-interactive{position:relative;overflow:hidden}
-.custom-scroll::-webkit-scrollbar{width:5px}
-.custom-scroll::-webkit-scrollbar-track{background:transparent}
-.custom-scroll::-webkit-scrollbar-thumb{background:#3c4b35;border-radius:10px}
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1)
+      }
 
-/* Loading */
-#loading-screen{position:fixed;inset:0;z-index:9999;background:#0A0A0A;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s}
-.loader-bar{width:180px;height:3px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-top:20px}
-.loader-bar-inner{height:100%;background:#39FF14;border-radius:99px;animation:load 1.8s ease-in-out forwards}
-@keyframes load{0%{width:0}100%{width:100%}}
+      33% {
+        transform: translate(40px, -30px) scale(1.08)
+      }
 
-/* Toast */
-#toast-container{position:fixed;top:72px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{padding:11px 18px;border-radius:8px;font-size:13px;font-weight:700;color:#022100;background:#39FF14;box-shadow:0 4px 20px rgba(57,255,20,.3);animation:tin .3s ease;pointer-events:all}
-.toast.err{background:#ffb4ab;color:#690005}
-.toast.out{opacity:0;transform:translateX(30px);transition:.25s}
-@keyframes tin{from{opacity:0;transform:translateX(30px)}}
+      66% {
+        transform: translate(-20px, 20px) scale(.95)
+      }
+    }
 
-/* Modal */
-#modal-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;transition:.2s;pointer-events:none}
-#modal-overlay.show{opacity:1;pointer-events:all}
-#modal-container{background:#1f2020;border:1px solid rgba(255,255,255,.1);border-radius:14px;max-width:600px;width:94%;max-height:88vh;overflow-y:auto}
-.modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.06)}
-.modal-head h2{font-family:Manrope;font-size:19px;font-weight:700;color:#e3e2e2}
-.modal-close{background:none;border:none;color:#baccb0;font-size:18px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px}
-.modal-close:hover{background:rgba(255,255,255,.08);color:#e3e2e2}
-.modal-body{padding:22px}
-.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid rgba(255,255,255,.06)}
+    @keyframes blobFloat2 {
 
-/* Forms */
-.form-label{display:block;font-size:11px;letter-spacing:.09em;font-weight:700;color:#baccb0;margin-bottom:6px;text-transform:uppercase}
-.form-group{display:flex;flex-direction:column;margin-bottom:14px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.form-group input,.form-group select,.form-group textarea{width:100%;background:#292a2a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 13px;color:#e3e2e2;font-size:14px;outline:none;font-family:Inter;transition:border-color .15s,box-shadow .15s}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#39FF14;box-shadow:0 0 0 3px rgba(57,255,20,.1)}
-.form-group select option{background:#1f2020}
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1)
+      }
 
-/* Buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 17px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;border:none;font-family:Inter;white-space:nowrap}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-primary{background:#39FF14;color:#022100}.btn-primary:hover:not(:disabled){box-shadow:0 0 18px rgba(57,255,20,.45);transform:translateY(-1px)}
-.btn-ghost{background:transparent;color:#baccb0;border:1px solid rgba(255,255,255,.1)}.btn-ghost:hover{color:#e3e2e2;background:rgba(255,255,255,.06)}
-.btn-danger{background:rgba(255,180,171,.08);color:#ffb4ab;border:1px solid rgba(255,180,171,.2)}.btn-danger:hover{background:rgba(255,180,171,.18)}
-.btn-sm{padding:6px 11px;font-size:12px}
+      33% {
+        transform: translate(-35px, 25px) scale(1.05)
+      }
 
-/* Input neon focus in login */
-.neon-input{width:100%;background:#292a2a;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px 12px 46px;color:#e3e2e2;font-size:15px;outline:none;font-family:Inter;transition:border-color .15s,box-shadow .15s}
-.neon-input:focus{border-color:#39FF14;box-shadow:0 0 0 3px rgba(57,255,20,.12)}
-.input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#baccb0;pointer-events:none;font-size:20px}
+      66% {
+        transform: translate(20px, -15px) scale(.97)
+      }
+    }
 
-/* Sidebar toggle: visible only on mobile */
-#sidebar-toggle{display:flex}
-@media(min-width:768px){#sidebar-toggle{display:none!important}}
-/* Capa Desfocada no Fundo */
-.bg-cover-blur { position:fixed; inset:0; z-index:-1; background-size:cover; background-position:center; filter:blur(20px); opacity:0.3; pointer-events:none; }
-</style>
+    @keyframes blobFloat3 {
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1)
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.06)
+      }
+    }
+
+    .bg-blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(110px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-blob-1 {
+      width: 650px;
+      height: 650px;
+      top: -200px;
+      left: -180px;
+      background: radial-gradient(circle, rgba(57, 255, 20, .09) 0%, transparent 68%);
+      animation: blobFloat1 14s ease-in-out infinite;
+    }
+
+    .bg-blob-2 {
+      width: 550px;
+      height: 550px;
+      bottom: -160px;
+      right: -140px;
+      background: radial-gradient(circle, rgba(57, 255, 20, .06) 0%, transparent 68%);
+      animation: blobFloat2 18s ease-in-out infinite;
+    }
+
+    .bg-blob-3 {
+      width: 400px;
+      height: 400px;
+      top: 30%;
+      right: 15%;
+      background: radial-gradient(circle, rgba(57, 255, 20, .04) 0%, transparent 65%);
+      filter: blur(90px);
+      animation: blobFloat1 22s ease-in-out infinite reverse;
+    }
+
+    .bg-blob-4 {
+      width: 350px;
+      height: 350px;
+      bottom: 20%;
+      left: 20%;
+      background: radial-gradient(circle, rgba(57, 255, 20, .03) 0%, transparent 65%);
+      filter: blur(100px);
+      animation: blobFloat2 26s ease-in-out infinite;
+    }
+
+    /* Malha sutil de linhas no fundo */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(57, 255, 20, .025) 1px, transparent 1px), linear-gradient(90deg, rgba(57, 255, 20, .025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    .glass-panel {
+      background: rgba(26, 26, 26, .65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px)
+    }
+
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-variation-settings: 'FILL' 0, 'wght' 400;
+      user-select: none;
+      line-height: 1;
+      display: inline-block
+    }
+
+    .status-pulse {
+      animation: pulse 2s infinite
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .6
+      }
+    }
+
+    /* ── Card Interactive Hover — pula e brilha ── */
+    .card-interactive {
+      transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), box-shadow .3s ease;
+      cursor: pointer
+    }
+
+    .card-interactive:hover {
+      transform: translateY(-6px) scale(1.015);
+      box-shadow: 0 0 22px rgba(57, 255, 20, .18), 0 8px 32px rgba(0, 0, 0, .3)
+    }
+
+    .card-interactive:active {
+      transform: translateY(-2px) scale(1.005)
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0
+      }
+
+      100% {
+        background-position: 200% 0
+      }
+    }
+
+    .card-interactive::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+      background: linear-gradient(120deg, transparent 30%, rgba(57, 255, 20, .06) 50%, transparent 70%);
+      background-size: 200% 100%;
+      animation: shimmer 3s infinite linear
+    }
+
+    .card-interactive:hover::after {
+      opacity: 1
+    }
+
+    .card-interactive {
+      position: relative;
+      overflow: hidden
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #3c4b35;
+      border-radius: 10px
+    }
+
+    /* Loading */
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #0A0A0A;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity .5s
+    }
+
+    .loader-bar {
+      width: 180px;
+      height: 3px;
+      background: rgba(255, 255, 255, .06);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 20px
+    }
+
+    .loader-bar-inner {
+      height: 100%;
+      background: #39FF14;
+      border-radius: 99px;
+      animation: load 1.8s ease-in-out forwards
+    }
+
+    @keyframes load {
+      0% {
+        width: 0
+      }
+
+      100% {
+        width: 100%
+      }
+    }
+
+    /* Toast */
+    #toast-container {
+      position: fixed;
+      top: 72px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none
+    }
+
+    .toast {
+      padding: 11px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #022100;
+      background: #39FF14;
+      box-shadow: 0 4px 20px rgba(57, 255, 20, .3);
+      animation: tin .3s ease;
+      pointer-events: all
+    }
+
+    .toast.err {
+      background: #ffb4ab;
+      color: #690005
+    }
+
+    .toast.out {
+      opacity: 0;
+      transform: translateX(30px);
+      transition: .25s
+    }
+
+    @keyframes tin {
+      from {
+        opacity: 0;
+        transform: translateX(30px)
+      }
+    }
+
+    /* Modal */
+    #modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      background: rgba(0, 0, 0, .75);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: .2s;
+      pointer-events: none
+    }
+
+    #modal-overlay.show {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    #modal-container {
+      background: #1f2020;
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 14px;
+      max-width: 600px;
+      width: 94%;
+      max-height: 88vh;
+      overflow-y: auto
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, .06)
+    }
+
+    .modal-head h2 {
+      font-family: Manrope;
+      font-size: 19px;
+      font-weight: 700;
+      color: #e3e2e2
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: #baccb0;
+      font-size: 18px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 6px
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, .08);
+      color: #e3e2e2
+    }
+
+    .modal-body {
+      padding: 22px
+    }
+
+    .modal-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 22px;
+      border-top: 1px solid rgba(255, 255, 255, .06)
+    }
+
+    /* Forms */
+    .form-label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: .09em;
+      font-weight: 700;
+      color: #baccb0;
+      margin-bottom: 6px;
+      text-transform: uppercase
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 14px
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: #292a2a;
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 8px;
+      padding: 9px 13px;
+      color: #e3e2e2;
+      font-size: 14px;
+      outline: none;
+      font-family: Inter;
+      transition: border-color .15s, box-shadow .15s
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #39FF14;
+      box-shadow: 0 0 0 3px rgba(57, 255, 20, .1)
+    }
+
+    .form-group select option {
+      background: #1f2020
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 17px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      border: none;
+      font-family: Inter;
+      white-space: nowrap
+    }
+
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    .btn-primary {
+      background: #39FF14;
+      color: #022100
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 0 18px rgba(57, 255, 20, .45);
+      transform: translateY(-1px)
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #baccb0;
+      border: 1px solid rgba(255, 255, 255, .1)
+    }
+
+    .btn-ghost:hover {
+      color: #e3e2e2;
+      background: rgba(255, 255, 255, .06)
+    }
+
+    .btn-danger {
+      background: rgba(255, 180, 171, .08);
+      color: #ffb4ab;
+      border: 1px solid rgba(255, 180, 171, .2)
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 180, 171, .18)
+    }
+
+    .btn-sm {
+      padding: 6px 11px;
+      font-size: 12px
+    }
+
+    /* Input neon focus in login */
+    .neon-input {
+      width: 100%;
+      background: #292a2a;
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 10px;
+      padding: 12px 14px 12px 46px;
+      color: #e3e2e2;
+      font-size: 15px;
+      outline: none;
+      font-family: Inter;
+      transition: border-color .15s, box-shadow .15s
+    }
+
+    .neon-input:focus {
+      border-color: #39FF14;
+      box-shadow: 0 0 0 3px rgba(57, 255, 20, .12)
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #baccb0;
+      pointer-events: none;
+      font-size: 20px
+    }
+
+    /* Sidebar toggle: visible only on mobile */
+    #sidebar-toggle {
+      display: flex
+    }
+
+    @media(min-width:768px) {
+      #sidebar-toggle {
+        display: none !important
+      }
+    }
+
+    /* Capa Desfocada no Fundo */
+    .bg-cover-blur {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-size: cover;
+      background-position: center;
+      filter: blur(20px);
+      opacity: 0.3;
+      pointer-events: none;
+    }
+  </style>
 </head>
+
 <body class="h-screen overflow-hidden">
-<!-- Capa Desfocada no Fundo (COLOQUE A URL DA SUA IMAGEM AQUI) -->
-<div class="bg-cover-blur" style="background-image: url('');"></div>
-
-<!-- Blobs de fundo animados -->
-<div class="bg-grid" aria-hidden="true"></div>
-<div class="bg-blob bg-blob-1" aria-hidden="true"></div>
-<div class="bg-blob bg-blob-2" aria-hidden="true"></div>
-<div class="bg-blob bg-blob-3" aria-hidden="true"></div>
-<div class="bg-blob bg-blob-4" aria-hidden="true"></div>
-
-<!-- ═══ LOADING ═══ -->
-<div id="loading-screen">
-  <h1 style="font-family:Manrope;font-size:30px;font-weight:800;color:#39FF14;letter-spacing:-.02em">Daniel Veículos</h1>
-  <p style="font-size:11px;letter-spacing:.12em;color:#baccb0;margin-top:6px;font-weight:700">GESTÃO PREMIUM</p>
-  <div class="loader-bar"><div class="loader-bar-inner"></div></div>
-</div>
-
-<!-- ═══ LOGIN / REGISTRO ═══ -->
-<div id="login-screen" class="fixed inset-0 z-[8000] flex flex-col items-center justify-center min-h-screen px-4" style="background:#0A0A0A">
-  <div class="w-full max-w-[430px]">
-
-    <!-- Logo -->
-    <div class="text-center mb-8">
-      <h1 style="font-family:Manrope;font-size:34px;font-weight:800;color:#39FF14;letter-spacing:-.02em">Daniel Veículos</h1>
-      <p style="font-size:11px;letter-spacing:.12em;color:#baccb0;font-weight:700;margin-top:4px">PORTAL DE GESTÃO PREMIUM</p>
-    </div>
-
-    <!-- PANEL: LOGIN -->
-    <div id="panel-login" class="glass-panel rounded-2xl p-8 border border-white/10 shadow-2xl">
-      <h2 style="font-family:Manrope;font-size:20px;font-weight:700;color:#e3e2e2;margin-bottom:6px">Bem-vindo de volta</h2>
-      <p style="font-size:13px;color:#baccb0;margin-bottom:24px">Entre com suas credenciais para acessar o sistema.</p>
-      <form id="login-form" autocomplete="on" novalidate>
-        <div style="margin-bottom:14px">
-          <label class="form-label">E-mail Corporativo</label>
-          <div style="position:relative">
-            <span class="material-symbols-outlined input-icon">mail</span>
-            <input id="login-email" class="neon-input" type="email" placeholder="nome@danielveiculos.com.br" value="daniel@danielveiculos.com.br" autocomplete="email" required/>
-          </div>
-        </div>
-        <div style="margin-bottom:6px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <label class="form-label" style="margin-bottom:0">Senha</label>
-            <a style="font-size:12px;color:#39FF14;cursor:pointer;font-weight:600">Esqueceu?</a>
-          </div>
-          <div style="position:relative">
-            <span class="material-symbols-outlined input-icon">lock</span>
-            <input id="login-pass" class="neon-input" type="password" placeholder="••••••••" value="admin" autocomplete="current-password" required style="padding-right:46px"/>
-            <span id="toggle-pass" class="material-symbols-outlined" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#baccb0;cursor:pointer;font-size:20px;z-index:10">visibility</span>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;margin:14px 0 20px">
-          <input type="checkbox" id="remember" checked style="width:15px;height:15px;accent-color:#39FF14">
-          <label for="remember" style="font-size:13px;color:#baccb0;cursor:pointer">Manter conectado</label>
-        </div>
-        <button id="btn-login" type="submit" class="btn btn-primary w-full" style="width:100%;padding:13px;font-size:15px;border-radius:10px">
-          Entrar no Sistema <span class="material-symbols-outlined" style="font-size:18px">login</span>
-        </button>
-      </form>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
-        <button class="btn btn-ghost" style="border-radius:10px;padding:10px"><span class="material-symbols-outlined" style="color:#39FF14">fingerprint</span>Biometria</button>
-        <button class="btn btn-ghost" style="border-radius:10px;padding:10px"><span class="material-symbols-outlined" style="color:#39FF14">qr_code_2</span>QR Code</button>
-      </div>
-      <p style="text-align:center;margin-top:20px;font-size:13px;color:#baccb0">
-        Não tem conta? <a id="show-register" style="color:#39FF14;cursor:pointer;font-weight:700">Criar conta</a>
-      </p>
-    </div>
-
-    <!-- PANEL: REGISTRO -->
-    <div id="panel-register" class="hidden glass-panel rounded-2xl border border-white/10 shadow-2xl" style="padding:28px 32px">
-      <h2 style="font-family:Manrope;font-size:20px;font-weight:700;color:#e3e2e2;margin-bottom:4px">Criar nova conta</h2>
-      <p style="font-size:13px;color:#baccb0;margin-bottom:20px">Preencha os dados para acessar o sistema.</p>
-      <form id="register-form" autocomplete="off" novalidate>
-
-        <!-- Foto do Funcionário -->
-        <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px;padding:14px 16px;background:rgba(57,255,20,.04);border:1.5px dashed rgba(57,255,20,.25);border-radius:14px">
-          <div id="reg-avatar" onclick="document.getElementById('reg-photo-input').click()"
-            style="width:72px;height:72px;border-radius:50%;background:rgba(57,255,20,.1);border:2px solid rgba(57,255,20,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;overflow:hidden"
-            onmouseenter="this.style.borderColor='#39FF14';this.style.boxShadow='0 0 16px rgba(57,255,20,.3)'"
-            onmouseleave="this.style.borderColor='rgba(57,255,20,.3)';this.style.boxShadow='none'">
-            <span class="material-symbols-outlined" style="font-size:30px;color:rgba(57,255,20,.5);font-variation-settings:'FILL' 1">add_a_photo</span>
-          </div>
-          <div style="flex:1">
-            <p style="font-weight:700;color:#e3e2e2;font-size:14px">Foto do Funcionário</p>
-            <p style="color:#baccb0;font-size:12px;margin-top:3px">Clique no círculo para adicionar sua foto</p>
-            <p style="color:#3c4b35;font-size:11px;margin-top:2px">JPG, PNG ou WEBP · Até 5 MB · Opcional</p>
-          </div>
-          <input id="reg-photo-input" type="file" accept="image/*" style="display:none"
-            onchange="(function(i){const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const av=document.getElementById('reg-avatar');av.innerHTML='';av.style.backgroundImage='url('+e.target.result+')';av.style.backgroundSize='cover';av.style.backgroundPosition='center';document.getElementById('reg-photo-value').value=e.target.result};r.readAsDataURL(f)})(this)">
-          <input type="hidden" id="reg-photo-value" value="">
-        </div>
-
-        <div style="margin-bottom:12px">
-          <label class="form-label">Nome Completo *</label>
-          <input id="reg-name" class="neon-input" style="padding-left:14px" type="text" placeholder="João da Silva" required
-            oninput="(function(v){const av=document.getElementById('reg-avatar');if(av.style.backgroundImage)return;const ini=v.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();av.innerHTML=ini?'<span style=&quot;font-size:22px;font-weight:800;color:#39FF14&quot;>'+ini+'</span>':'<span class=&quot;material-symbols-outlined&quot; style=&quot;font-size:30px;color:rgba(57,255,20,.5);font-variation-settings:&apos;FILL&apos; 1&quot;>add_a_photo</span>'})(this.value)"/>
-        </div>
-        <div style="margin-bottom:12px">
-          <label class="form-label">E-mail *</label>
-          <input id="reg-email" class="neon-input" style="padding-left:14px" type="email" placeholder="joao@danielveiculos.com.br" required/>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-          <div>
-            <label class="form-label">Senha * (mín. 6 caracteres)</label>
-            <input id="reg-pass" class="neon-input" style="padding-left:14px" type="password" placeholder="••••••••" required/>
-          </div>
-          <div>
-            <label class="form-label">Confirmar Senha *</label>
-            <input id="reg-pass2" class="neon-input" style="padding-left:14px" type="password" placeholder="••••••••" required/>
-          </div>
-        </div>
-        <button id="btn-register" type="submit" class="btn btn-primary" style="width:100%;padding:13px;font-size:15px;border-radius:10px;margin-top:8px">
-          Criar Conta <span class="material-symbols-outlined" style="font-size:18px">person_add</span>
-        </button>
-      </form>
-      <p style="text-align:center;margin-top:18px;font-size:13px;color:#baccb0">
-        Já tem conta? <a id="show-login" style="color:#39FF14;cursor:pointer;font-weight:700">Fazer login</a>
-      </p>
-    </div>
-
-    <p style="text-align:center;font-size:11px;color:#3c4b35;margin-top:20px;letter-spacing:.05em">
-      🔒 Conexão criptografada SSL 256-bit · © 2024 Daniel Veículos
-    </p>
+  <!-- Capa Desfocada no Fundo (COLOQUE A URL DA SUA IMAGEM AQUI) -->
+  <div class="bg-cover-blur"
+    style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7DB_o_JtVK3f17ZxePWmhxaZOV3I6TgLl3A&s');">
   </div>
-</div>
 
-<!-- ═══ APP SHELL ═══ -->
-<div id="app-shell" style="display:none" class="flex h-screen w-full">
+  <!-- Blobs de fundo animados -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-blob bg-blob-1" aria-hidden="true"></div>
+  <div class="bg-blob bg-blob-2" aria-hidden="true"></div>
+  <div class="bg-blob bg-blob-3" aria-hidden="true"></div>
+  <div class="bg-blob bg-blob-4" aria-hidden="true"></div>
 
-  <!-- Sidebar -->
-  <aside id="sidebar" class="glass-panel border-r border-white/5 flex flex-col h-full shrink-0 fixed md:relative z-40 -translate-x-full md:translate-x-0 transition-transform duration-300" style="width:240px;padding:20px 0">
-    <div style="padding:0 20px 24px">
-      <h1 style="font-family:Manrope;font-size:20px;font-weight:800;color:#39FF14;letter-spacing:-.02em">Daniel Veículos</h1>
-      <p style="font-size:10px;letter-spacing:.1em;color:#baccb0;font-weight:700">GESTÃO PREMIUM</p>
+  <!-- ═══ LOADING ═══ -->
+  <div id="loading-screen">
+    <h1 style="font-family:Manrope;font-size:30px;font-weight:800;color:#39FF14;letter-spacing:-.02em">Daniel Veículos
+    </h1>
+    <p style="font-size:11px;letter-spacing:.12em;color:#baccb0;margin-top:6px;font-weight:700">GESTÃO PREMIUM</p>
+    <div class="loader-bar">
+      <div class="loader-bar-inner"></div>
     </div>
-    <nav id="nav-menu" class="flex-1 flex flex-col gap-xs px-sm overflow-y-auto custom-scroll"></nav>
-    <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.05);margin-top:12px;display:flex;flex-direction:column;gap:8px">
-      <button id="btn-novo" class="btn btn-primary" style="border-radius:10px;width:100%;justify-content:center">
-        <span class="material-symbols-outlined" style="font-size:18px">add_circle</span>Novo Cadastro
-      </button>
-      <button id="btn-users" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center">
-        <span class="material-symbols-outlined" style="font-size:16px">manage_accounts</span>Usuários
-      </button>
-      <button id="btn-logout" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;color:#ffb4ab">
-        <span class="material-symbols-outlined" style="font-size:16px">logout</span>Sair
-      </button>
+  </div>
+
+  <!-- ═══ LOGIN / REGISTRO ═══ -->
+  <div id="login-screen" class="fixed inset-0 z-[8000] flex flex-col items-center justify-center min-h-screen px-4"
+    style="background:#0A0A0A">
+    <div class="w-full max-w-[430px]">
+
+      <!-- Logo -->
+      <div class="text-center mb-8">
+        <h1 style="font-family:Manrope;font-size:34px;font-weight:800;color:#39FF14;letter-spacing:-.02em">Daniel
+          Veículos</h1>
+        <p style="font-size:11px;letter-spacing:.12em;color:#baccb0;font-weight:700;margin-top:4px">PORTAL DE GESTÃO
+          PREMIUM</p>
+      </div>
+
+      <!-- PANEL: LOGIN -->
+      <div id="panel-login" class="glass-panel rounded-2xl p-8 border border-white/10 shadow-2xl">
+        <h2 style="font-family:Manrope;font-size:20px;font-weight:700;color:#e3e2e2;margin-bottom:6px">Bem-vindo de
+          volta</h2>
+        <p style="font-size:13px;color:#baccb0;margin-bottom:24px">Entre com suas credenciais para acessar o sistema.
+        </p>
+        <form id="login-form" autocomplete="on" novalidate>
+          <div style="margin-bottom:14px">
+            <label class="form-label">E-mail Corporativo</label>
+            <div style="position:relative">
+              <span class="material-symbols-outlined input-icon">mail</span>
+              <input id="login-email" class="neon-input" type="email" placeholder="nome@danielveiculos.com.br"
+                value="daniel@danielveiculos.com.br" autocomplete="email" required />
+            </div>
+          </div>
+          <div style="margin-bottom:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <label class="form-label" style="margin-bottom:0">Senha</label>
+              <a style="font-size:12px;color:#39FF14;cursor:pointer;font-weight:600">Esqueceu?</a>
+            </div>
+            <div style="position:relative">
+              <span class="material-symbols-outlined input-icon">lock</span>
+              <input id="login-pass" class="neon-input" type="password" placeholder="••••••••" value="admin"
+                autocomplete="current-password" required style="padding-right:46px" />
+              <span id="toggle-pass" class="material-symbols-outlined"
+                style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#baccb0;cursor:pointer;font-size:20px;z-index:10">visibility</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin:14px 0 20px">
+            <input type="checkbox" id="remember" checked style="width:15px;height:15px;accent-color:#39FF14">
+            <label for="remember" style="font-size:13px;color:#baccb0;cursor:pointer">Manter conectado</label>
+          </div>
+          <button id="btn-login" type="submit" class="btn btn-primary w-full"
+            style="width:100%;padding:13px;font-size:15px;border-radius:10px">
+            Entrar no Sistema <span class="material-symbols-outlined" style="font-size:18px">login</span>
+          </button>
+        </form>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+          <button class="btn btn-ghost" style="border-radius:10px;padding:10px"><span class="material-symbols-outlined"
+              style="color:#39FF14">fingerprint</span>Biometria</button>
+          <button class="btn btn-ghost" style="border-radius:10px;padding:10px"><span class="material-symbols-outlined"
+              style="color:#39FF14">qr_code_2</span>QR Code</button>
+        </div>
+        <p style="text-align:center;margin-top:20px;font-size:13px;color:#baccb0">
+          Não tem conta? <a id="show-register" style="color:#39FF14;cursor:pointer;font-weight:700">Criar conta</a>
+        </p>
+      </div>
+
+      <!-- PANEL: REGISTRO -->
+      <div id="panel-register" class="hidden glass-panel rounded-2xl border border-white/10 shadow-2xl"
+        style="padding:28px 32px">
+        <h2 style="font-family:Manrope;font-size:20px;font-weight:700;color:#e3e2e2;margin-bottom:4px">Criar nova conta
+        </h2>
+        <p style="font-size:13px;color:#baccb0;margin-bottom:20px">Preencha os dados para acessar o sistema.</p>
+        <form id="register-form" autocomplete="off" novalidate>
+
+          <!-- Foto do Funcionário -->
+          <div
+            style="display:flex;align-items:center;gap:18px;margin-bottom:20px;padding:14px 16px;background:rgba(57,255,20,.04);border:1.5px dashed rgba(57,255,20,.25);border-radius:14px">
+            <div id="reg-avatar" onclick="document.getElementById('reg-photo-input').click()"
+              style="width:72px;height:72px;border-radius:50%;background:rgba(57,255,20,.1);border:2px solid rgba(57,255,20,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;overflow:hidden"
+              onmouseenter="this.style.borderColor='#39FF14';this.style.boxShadow='0 0 16px rgba(57,255,20,.3)'"
+              onmouseleave="this.style.borderColor='rgba(57,255,20,.3)';this.style.boxShadow='none'">
+              <span class="material-symbols-outlined"
+                style="font-size:30px;color:rgba(57,255,20,.5);font-variation-settings:'FILL' 1">add_a_photo</span>
+            </div>
+            <div style="flex:1">
+              <p style="font-weight:700;color:#e3e2e2;font-size:14px">Foto do Funcionário</p>
+              <p style="color:#baccb0;font-size:12px;margin-top:3px">Clique no círculo para adicionar sua foto</p>
+              <p style="color:#3c4b35;font-size:11px;margin-top:2px">JPG, PNG ou WEBP · Até 5 MB · Opcional</p>
+            </div>
+            <input id="reg-photo-input" type="file" accept="image/*" style="display:none"
+              onchange="(function(i){const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const av=document.getElementById('reg-avatar');av.innerHTML='';av.style.backgroundImage='url('+e.target.result+')';av.style.backgroundSize='cover';av.style.backgroundPosition='center';document.getElementById('reg-photo-value').value=e.target.result};r.readAsDataURL(f)})(this)">
+            <input type="hidden" id="reg-photo-value" value="">
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label class="form-label">Nome Completo *</label>
+            <input id="reg-name" class="neon-input" style="padding-left:14px" type="text" placeholder="João da Silva"
+              required
+              oninput="(function(v){const av=document.getElementById('reg-avatar');if(av.style.backgroundImage)return;const ini=v.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();av.innerHTML=ini?'<span style=&quot;font-size:22px;font-weight:800;color:#39FF14&quot;>'+ini+'</span>':'<span class=&quot;material-symbols-outlined&quot; style=&quot;font-size:30px;color:rgba(57,255,20,.5);font-variation-settings:&apos;FILL&apos; 1&quot;>add_a_photo</span>'})(this.value)" />
+          </div>
+          <div style="margin-bottom:12px">
+            <label class="form-label">E-mail *</label>
+            <input id="reg-email" class="neon-input" style="padding-left:14px" type="email"
+              placeholder="joao@danielveiculos.com.br" required />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div>
+              <label class="form-label">Senha * (mín. 6 caracteres)</label>
+              <input id="reg-pass" class="neon-input" style="padding-left:14px" type="password" placeholder="••••••••"
+                required />
+            </div>
+            <div>
+              <label class="form-label">Confirmar Senha *</label>
+              <input id="reg-pass2" class="neon-input" style="padding-left:14px" type="password" placeholder="••••••••"
+                required />
+            </div>
+          </div>
+          <button id="btn-register" type="submit" class="btn btn-primary"
+            style="width:100%;padding:13px;font-size:15px;border-radius:10px;margin-top:8px">
+            Criar Conta <span class="material-symbols-outlined" style="font-size:18px">person_add</span>
+          </button>
+        </form>
+        <p style="text-align:center;margin-top:18px;font-size:13px;color:#baccb0">
+          Já tem conta? <a id="show-login" style="color:#39FF14;cursor:pointer;font-weight:700">Fazer login</a>
+        </p>
+      </div>
+
+      <p style="text-align:center;font-size:11px;color:#3c4b35;margin-top:20px;letter-spacing:.05em">
+        🔒 Conexão criptografada SSL 256-bit · © 2024 Daniel Veículos
+      </p>
     </div>
-  </aside>
-  <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-30 md:hidden" hidden></div>
+  </div>
 
-  <!-- Main -->
-  <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
-    <!-- Header -->
-    <header class="flex justify-between items-center px-lg py-md border-b border-white/5 sticky top-0 z-20 shrink-0" style="background:rgba(18,20,20,.8);backdrop-filter:blur(16px)">
-      <div class="flex items-center gap-md">
-        <button id="sidebar-toggle" class="md:hidden" style="flex-direction:column;justify-content:center;align-items:center;gap:5px;width:38px;height:38px;border-radius:8px;background:rgba(57,255,20,.05);border:1px solid rgba(57,255,20,.15);cursor:pointer;transition:all .2s;flex-shrink:0">
-          <span style="display:block;width:18px;height:2px;background:#39FF14;border-radius:2px"></span>
-          <span style="display:block;width:14px;height:2px;background:#39FF14;border-radius:2px"></span>
-          <span style="display:block;width:18px;height:2px;background:#39FF14;border-radius:2px"></span>
-        </button>
-        <h2 id="page-title" style="font-family:Manrope;font-size:20px;font-weight:800;color:#39FF14;letter-spacing:-.01em">Visão Geral</h2>
+  <!-- ═══ APP SHELL ═══ -->
+  <div id="app-shell" style="display:none" class="flex h-screen w-full">
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+      class="glass-panel border-r border-white/5 flex flex-col h-full shrink-0 fixed md:relative z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"
+      style="width:240px;padding:20px 0">
+      <div style="padding:0 20px 24px">
+        <h1 style="font-family:Manrope;font-size:20px;font-weight:800;color:#39FF14;letter-spacing:-.02em">Daniel
+          Veículos</h1>
+        <p style="font-size:10px;letter-spacing:.1em;color:#baccb0;font-weight:700">GESTÃO PREMIUM</p>
       </div>
-      <div class="flex items-center gap-md">
-        <div class="hidden md:flex items-center bg-surface-container px-md py-xs rounded-full border border-white/5" style="min-width:220px">
-          <span class="material-symbols-outlined text-on-surface-variant mr-sm" style="font-size:18px">search</span>
-          <input id="global-search" class="bg-transparent border-none focus:ring-0 text-sm text-on-surface w-full outline-none placeholder:text-on-surface-variant" placeholder="Buscar..."/>
-        </div>
-        <button id="btn-notif" class="relative p-xs rounded-full hover:bg-white/5 transition-colors">
-          <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
-          <span id="notif-dot" class="absolute top-0 right-0 w-2 h-2 bg-primary-container rounded-full border-2 border-background"></span>
+      <nav id="nav-menu" class="flex-1 flex flex-col gap-xs px-sm overflow-y-auto custom-scroll"></nav>
+      <div
+        style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.05);margin-top:12px;display:flex;flex-direction:column;gap:8px">
+        <button id="btn-novo" class="btn btn-primary" style="border-radius:10px;width:100%;justify-content:center">
+          <span class="material-symbols-outlined" style="font-size:18px">add_circle</span>Novo Cadastro
         </button>
-        <div class="flex items-center gap-sm border-l border-white/10 pl-md">
-          <div class="w-9 h-9 rounded-full bg-primary-container/10 border-2 border-primary-container flex items-center justify-center text-primary-container font-bold text-sm" id="user-avatar">DV</div>
-          <p class="text-sm font-bold text-on-surface hidden sm:block" id="user-name">Gestor</p>
-        </div>
+        <button id="btn-users" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center">
+          <span class="material-symbols-outlined" style="font-size:16px">manage_accounts</span>Usuários
+        </button>
+        <button id="btn-logout" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;color:#ffb4ab">
+          <span class="material-symbols-outlined" style="font-size:16px">logout</span>Sair
+        </button>
       </div>
-    </header>
+    </aside>
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-30 md:hidden" hidden></div>
 
-    <!-- Page Content -->
-    <section id="page-content" class="flex-1 overflow-y-auto custom-scroll p-lg" style="display:flex;flex-direction:column;gap:20px"></section>
-  </main>
-</div>
+    <!-- Main -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <!-- Header -->
+      <header class="flex justify-between items-center px-lg py-md border-b border-white/5 sticky top-0 z-20 shrink-0"
+        style="background:rgba(18,20,20,.8);backdrop-filter:blur(16px)">
+        <div class="flex items-center gap-md">
+          <button id="sidebar-toggle" class="md:hidden"
+            style="flex-direction:column;justify-content:center;align-items:center;gap:5px;width:38px;height:38px;border-radius:8px;background:rgba(57,255,20,.05);border:1px solid rgba(57,255,20,.15);cursor:pointer;transition:all .2s;flex-shrink:0">
+            <span style="display:block;width:18px;height:2px;background:#39FF14;border-radius:2px"></span>
+            <span style="display:block;width:14px;height:2px;background:#39FF14;border-radius:2px"></span>
+            <span style="display:block;width:18px;height:2px;background:#39FF14;border-radius:2px"></span>
+          </button>
+          <h2 id="page-title"
+            style="font-family:Manrope;font-size:20px;font-weight:800;color:#39FF14;letter-spacing:-.01em">Visão Geral
+          </h2>
+        </div>
+        <div class="flex items-center gap-md">
+          <div class="hidden md:flex items-center bg-surface-container px-md py-xs rounded-full border border-white/5"
+            style="min-width:220px">
+            <span class="material-symbols-outlined text-on-surface-variant mr-sm" style="font-size:18px">search</span>
+            <input id="global-search"
+              class="bg-transparent border-none focus:ring-0 text-sm text-on-surface w-full outline-none placeholder:text-on-surface-variant"
+              placeholder="Buscar..." />
+          </div>
+          <button id="btn-notif" class="relative p-xs rounded-full hover:bg-white/5 transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+            <span id="notif-dot"
+              class="absolute top-0 right-0 w-2 h-2 bg-primary-container rounded-full border-2 border-background"></span>
+          </button>
+          <div class="flex items-center gap-sm border-l border-white/10 pl-md">
+            <div
+              class="w-9 h-9 rounded-full bg-primary-container/10 border-2 border-primary-container flex items-center justify-center text-primary-container font-bold text-sm"
+              id="user-avatar">DV</div>
+            <p class="text-sm font-bold text-on-surface hidden sm:block" id="user-name">Gestor</p>
+          </div>
+        </div>
+      </header>
 
-<!-- FAB -->
-<button id="fab-btn" style="display:none;position:fixed;bottom:80px;right:20px;width:56px;height:56px;border-radius:50%;background:#39FF14;color:#022100;border:none;cursor:pointer;z-index:40;box-shadow:0 0 25px rgba(57,255,20,.4);transition:transform .2s" class="flex items-center justify-center group hover:scale-110 active:scale-95" title="">
-  <span id="fab-icon" class="material-symbols-outlined" style="font-size:26px">add</span>
-  <span id="fab-label" style="position:absolute;right:calc(100% + 10px);background:#1f2020;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;white-space:nowrap;opacity:0;transition:.2s" class="group-hover:opacity-100">Novo</span>
-</button>
+      <!-- Page Content -->
+      <section id="page-content" class="flex-1 overflow-y-auto custom-scroll p-lg"
+        style="display:flex;flex-direction:column;gap:20px"></section>
+    </main>
+  </div>
 
-<!-- Bottom Nav Mobile -->
-<nav id="bottom-nav" style="display:none;position:fixed;bottom:0;left:0;width:100%;z-index:50;background:rgba(13,14,15,.92);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.06)" class="md:hidden flex justify-around items-center py-sm"></nav>
+  <!-- FAB -->
+  <button id="fab-btn"
+    style="display:none;position:fixed;bottom:80px;right:20px;width:56px;height:56px;border-radius:50%;background:#39FF14;color:#022100;border:none;cursor:pointer;z-index:40;box-shadow:0 0 25px rgba(57,255,20,.4);transition:transform .2s"
+    class="flex items-center justify-center group hover:scale-110 active:scale-95" title="">
+    <span id="fab-icon" class="material-symbols-outlined" style="font-size:26px">add</span>
+    <span id="fab-label"
+      style="position:absolute;right:calc(100% + 10px);background:#1f2020;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;white-space:nowrap;opacity:0;transition:.2s"
+      class="group-hover:opacity-100">Novo</span>
+  </button>
 
-<!-- Modal -->
-<div id="modal-overlay" hidden><div id="modal-container"></div></div>
-<!-- Toast -->
-<div id="toast-container"></div>
+  <!-- Bottom Nav Mobile -->
+  <nav id="bottom-nav"
+    style="display:none;position:fixed;bottom:0;left:0;width:100%;z-index:50;background:rgba(13,14,15,.92);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.06)"
+    class="md:hidden flex justify-around items-center py-sm"></nav>
 
-<!-- html2pdf para relatórios -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Modal -->
+  <div id="modal-overlay" hidden>
+    <div id="modal-container"></div>
+  </div>
+  <!-- Toast -->
+  <div id="toast-container"></div>
 
-<!-- Firebase SDK (Compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <!-- html2pdf para relatórios -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-<script src="js/auth.js"></script>
-<script src="js/database.js"></script>
-<script src="js/components.js"></script>
-<script src="js/pages.js"></script>
-<script src="js/app.js"></script>
+  <!-- Firebase SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+  <script src="js/auth.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/pages.js"></script>
+  <script src="js/app.js"></script>
 </body>
+
 </html>
