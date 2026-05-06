@@ -130,6 +130,8 @@ const UI = {
     v = v || {};
     const opt = (arr, sel) => arr.map(x => `<option${sel===x?' selected':''}>${x}</option>`).join('');
     const ep = v.photo || '';
+    const cl = DB.customers();
+    const optCl = cl.map(c => `<option value="${c.id}" ${v.soldTo===c.id?'selected':''}>${c.name}</option>`).join('');
     return `<form id="v-form" onsubmit="App.saveVehicle(event)" autocomplete="off">
       <input type="hidden" name="id" value="${v.id || ''}">
       <input type="hidden" name="photo" id="v-photo-value" value="${ep}">
@@ -160,7 +162,15 @@ const UI = {
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Placa</label><input name="plate" value="${v.plate||''}" placeholder="ABC-1D23"></div>
-        <div class="form-group"><label class="form-label">Status</label><select name="status">${opt(['available','reserved','sold','vitrine','proposal'], v.status)}</select></div>
+        <div class="form-group"><label class="form-label">Status</label><select name="status" onchange="document.getElementById('v-sold-to-group').style.display=this.value==='sold'?'block':'none'">${opt(['available','reserved','sold','vitrine','proposal'], v.status)}</select></div>
+      </div>
+      <div class="form-group" id="v-sold-to-group" style="display:${v.status==='sold'?'block':'none'}">
+        <label class="form-label">Vendido para *</label>
+        <select name="soldTo" style="width:100%;background:#292a2a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 13px;color:#e3e2e2;font-size:14px;outline:none;font-family:Inter">
+          <option value="">-- Selecione o Cliente --</option>
+          ${optCl}
+        </select>
+        <p style="font-size:11px;color:#facc15;margin-top:6px">Se o cliente não estiver na lista, <a href="javascript:void(0)" onclick="App.closeModal();setTimeout(()=>App.addCustomer(), 300)" style="text-decoration:underline;color:#facc15">cadastre-o primeiro no CRM</a>.</p>
       </div>
     </form>`;
   },
@@ -169,23 +179,44 @@ const UI = {
     const file = input.files[0]; if (!file) return;
     const z = document.getElementById('v-photo-zone');
     const h = document.getElementById('v-photo-value');
-    if (z) z.innerHTML = `<div style="text-align:center;padding:18px"><p style="color:#39FF14;font-size:13px;font-weight:600;">Enviando foto...</p></div>`;
+    if (z) z.innerHTML = `<div style="text-align:center;padding:18px"><p style="color:#39FF14;font-size:13px;font-weight:600;">Otimizando HD...</p></div>`;
     
-    try {
-      // Tenta enviar para o Firebase Storage
-      const url = await DB.uploadPhoto(file);
-      if (z) z.innerHTML = `<img src="${url}" style="width:100%;height:118px;object-fit:cover">`;
-      if (h) h.value = url;
-    } catch (err) {
-      // Fallback: se a regra do Storage falhar ou não estiver configurado, salva em Base64
-      console.warn("Storage falhou, usando Base64", err);
-      const reader = new FileReader();
-      reader.onload = e => {
-        if (z) z.innerHTML = `<img src="${e.target.result}" style="width:100%;height:118px;object-fit:cover">`;
-        if (h) h.value = e.target.result;
+    this._compressImage(file, async (blob, dataUrl) => {
+      if (z) z.innerHTML = `<div style="text-align:center;padding:18px"><p style="color:#39FF14;font-size:13px;font-weight:600;">Enviando para nuvem...</p></div>`;
+      try {
+        const url = await DB.uploadPhoto(blob);
+        if (z) z.innerHTML = `<img src="${url}" style="width:100%;height:118px;object-fit:cover">`;
+        if (h) h.value = url;
+      } catch (err) {
+        console.warn("Storage falhou, usando Base64", err);
+        if (z) z.innerHTML = `<img src="${dataUrl}" style="width:100%;height:118px;object-fit:cover">`;
+        if (h) h.value = dataUrl;
+      }
+    });
+  },
+
+  _compressImage(file, callback) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width, height = img.height;
+        const max = 1200;
+        if (width > height && width > max) { height = Math.round(height * max / width); width = max; }
+        else if (height > width && height > max) { width = Math.round(width * max / height); height = max; }
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        fetch(dataUrl).then(res => res.blob()).then(blob => {
+          blob.name = file.name;
+          callback(blob, dataUrl);
+        });
       };
-      reader.readAsDataURL(file);
-    }
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   },
 
 
@@ -236,19 +267,17 @@ const UI = {
     const val = document.getElementById('c-photo-value');
     if (av) { av.textContent = '...'; }
 
-    try {
-      const url = await DB.uploadPhoto(file);
-      if (av)  { av.textContent = ''; av.style.background = `url(${url}) center/cover`; }
-      if (val) val.value = url;
-    } catch (err) {
-      console.warn("Storage falhou, usando Base64", err);
-      const reader = new FileReader();
-      reader.onload = e => {
-        if (av)  { av.textContent = ''; av.style.background = `url(${e.target.result}) center/cover`; }
-        if (val) val.value = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
+    this._compressImage(file, async (blob, dataUrl) => {
+      try {
+        const url = await DB.uploadPhoto(blob);
+        if (av)  { av.textContent = ''; av.style.background = `url(${url}) center/cover`; }
+        if (val) val.value = url;
+      } catch (err) {
+        console.warn("Storage falhou, usando Base64", err);
+        if (av)  { av.textContent = ''; av.style.background = `url(${dataUrl}) center/cover`; }
+        if (val) val.value = dataUrl;
+      }
+    });
   },
 
   _updateAvatarInitials(input) {
@@ -341,12 +370,18 @@ const UI = {
       <p class="font-bold ${green ? 'text-primary-container' : 'text-on-surface'}">${val}</p>
     </div>`;
     const stMap = { available:'Disponível', reserved:'Reservado', sold:'Vendido', proposal:'Proposta', vitrine:'Vitrine' };
+    let soldToBlock = '';
+    if (v.status === 'sold' && v.soldTo) {
+      const c = DB.customer(v.soldTo);
+      soldToBlock = c ? f('Vendido para', c.name, true) : f('Vendido para', 'Cliente Desconhecido');
+    }
     return `<div class="grid grid-cols-2 gap-md">
       ${f('Marca', v.brand)} ${f('Modelo', v.model)}
       ${f('Ano', v.year)} ${f('Preço', Fmt.money(v.price), true)}
       ${f('KM', Fmt.km(v.km))} ${f('Cor', v.color || '—')}
       ${f('Combustível', v.fuel || '—')} ${f('Transmissão', v.trans || '—')}
       ${f('Placa', v.plate || '—')} ${f('Status', stMap[v.status] || v.status)}
+      ${soldToBlock}
       ${v.createdAt ? f('Cadastrado em', Fmt.date(v.createdAt)) : ''}
     </div>
     <button class="w-full mt-md btn btn-primary flex justify-center items-center gap-sm" onclick="App.printFichaVehicle(${v.id})">
