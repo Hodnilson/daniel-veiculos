@@ -170,7 +170,7 @@ const UI = {
         <input type="text" id="v-sold-to-search" placeholder="Buscar cliente por nome..." autocomplete="off"
           value="${v.soldTo ? (DB.customer(v.soldTo)?.name || '') : ''}"
           onfocus="document.getElementById('v-sold-list').style.display='block'" 
-          onkeyup="UI._filterSoldClients(this.value)"
+          onkeyup="UI.filterDropdown(this.value, 'v-client-item', 'v-client-empty')"
           style="width:100%;background:#292a2a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 13px;color:#e3e2e2;font-size:14px;outline:none;font-family:Inter">
         <div id="v-sold-list" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1f2020;border:1px solid rgba(255,255,255,.2);border-radius:8px;max-height:180px;overflow-y:auto;z-index:9999;margin-top:4px;box-shadow:0 10px 25px rgba(0,0,0,0.5)">
           ${cl.map(c => `<div class="v-client-item hover:bg-white/5" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);color:#e3e2e2;font-size:13px" onclick="document.getElementById('v-sold-to').value='${c.id}';document.getElementById('v-sold-to-search').value='${c.name}';this.parentNode.style.display='none'">${c.name}</div>`).join('')}
@@ -235,15 +235,15 @@ const UI = {
   },
 
 
-  _filterSoldClients(q) {
+  filterDropdown(q, itemClass, emptyClass) {
     const term = q.toLowerCase();
     let hasVis = false;
-    document.querySelectorAll('.v-client-item').forEach(el => {
+    document.querySelectorAll('.' + itemClass).forEach(el => {
       const match = el.textContent.toLowerCase().includes(term);
       el.style.display = match ? 'block' : 'none';
       if (match) hasVis = true;
     });
-    const empty = document.querySelector('.v-client-empty');
+    const empty = document.querySelector('.' + emptyClass);
     if (empty) empty.style.display = hasVis ? 'none' : 'block';
   },
 
@@ -313,15 +313,22 @@ const UI = {
     av.textContent = Fmt.initials(input.value || '?');
   },
 
-  /* ─── Transaction Form ─── */
   transactionForm(t) {
     t = t || {};
     const statuses = {'proposal':'Em Proposta', 'completed':'Concluído'};
     const optSt = Object.entries(statuses).map(([v,l]) => `<option value="${v}"${t.status===v?' selected':''}>${l}</option>`).join('');
+    const cl = DB.customers();
     return `<form id="t-form" onsubmit="App.saveTransaction(event)" autocomplete="off">
       <input type="hidden" name="id" value="${t.id || ''}">
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Cliente *</label><input name="client" value="${t.client||''}" required placeholder="Ex: João da Silva"></div>
+        <div class="form-group" id="t-client-group" style="position:relative">
+          <label class="form-label">Cliente *</label>
+          <input type="text" name="client" id="t-client-search" placeholder="Buscar cliente..." value="${t.client||''}" required autocomplete="off" onfocus="document.getElementById('t-client-list').style.display='block'" onkeyup="UI.filterDropdown(this.value, 't-client-item', 't-client-empty')" style="width:100%;background:#292a2a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 13px;color:#e3e2e2;font-size:14px;outline:none;font-family:Inter">
+          <div id="t-client-list" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1f2020;border:1px solid rgba(255,255,255,.2);border-radius:8px;max-height:180px;overflow-y:auto;z-index:9999;margin-top:4px;box-shadow:0 10px 25px rgba(0,0,0,0.5)">
+            ${cl.map(c => `<div class="t-client-item hover:bg-white/5" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);color:#e3e2e2;font-size:13px" onclick="document.getElementById('t-client-search').value='${c.name}';this.parentNode.style.display='none'">${c.name}</div>`).join('')}
+            <div class="t-client-empty" style="display:none;padding:10px 14px;color:#baccb0;font-size:13px;text-align:center">Nenhum cliente encontrado</div>
+          </div>
+        </div>
         <div class="form-group"><label class="form-label">Veículo / Descrição *</label><input name="vehicle" value="${t.vehicle||''}" required placeholder="Ex: BMW M4"></div>
       </div>
       <div class="form-row">
@@ -331,7 +338,15 @@ const UI = {
       <div class="form-row">
         <div class="form-group"><label class="form-label">Status</label><select name="status">${optSt}</select></div>
       </div>
-    </form>`;
+    </form>
+    <script>
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#t-client-group')) {
+          const list = document.getElementById('t-client-list');
+          if (list) list.style.display = 'none';
+        }
+      });
+    </script>`;
   },
 
   /* ─── Payable Form ─── */
