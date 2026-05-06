@@ -39,15 +39,22 @@ const DB = (() => {
   }
 
   function setupSync() {
-    ['vehicles', 'customers', 'transactions', 'payables', 'notifs'].forEach(k => {
+    ['vehicles', 'customers', 'transactions', 'payables', 'notifs', 'users'].forEach(k => {
       rdb.ref(k).on('value', snapshot => {
         const data = snapshot.val();
         if (data) {
-          localStorage.setItem(KEYS[k], JSON.stringify(data));
+          localStorage.setItem(KEYS[k] || k, JSON.stringify(data));
           window.dispatchEvent(new CustomEvent('db-updated'));
         }
       });
     });
+  }
+
+  async function uploadPhoto(file) {
+    if (!firebase.storage) throw new Error('Storage indisponível');
+    const storageRef = firebase.storage().ref(`photos/${Date.now()}_${file.name}`);
+    await storageRef.put(file);
+    return await storageRef.getDownloadURL();
   }
 
   function calcFinance() {
@@ -222,6 +229,7 @@ const DB = (() => {
         {cat:'SISTEMA', text:'Sistema inicializado e pronto para operação. Cadastre veículos e clientes para ver os insights.'},
       ];
     },
+    uploadPhoto,
   };
 })();
 

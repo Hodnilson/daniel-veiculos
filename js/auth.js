@@ -1,130 +1,87 @@
-/* ═══ AUTH MODULE — Daniel Veículos ═══
- * Camada de autenticação com persistência via localStorage
- * Hash de senha via SHA-256 (SubtleCrypto API)
- * Sessões via token gerado aleatoriamente
- */
+/* ═══ AUTH MODULE — Daniel Veículos (Firebase) ═══ */
 'use strict';
 
 const Auth = (() => {
-  const KEYS = {
-    users:   'dv_users',
-    session: 'dv_session',
-  };
+  let currentUser = null;
 
-  /* ── Utilitários ── */
-  async function hashPassword(pass) {
-    const buf = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(pass + 'dv_salt_2024')
-    );
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
-
-  function genToken() {
-    return crypto.randomUUID ? crypto.randomUUID()
-      : [...Array(32)].map(()=>Math.random().toString(36)[2]).join('');
-  }
-
-  function loadUsers() {
-    try { return JSON.parse(localStorage.getItem(KEYS.users)) || []; }
-    catch { return []; }
-  }
-
-  function saveUsers(users) {
-    localStorage.setItem(KEYS.users, JSON.stringify(users));
-  }
-
-  /* ── Seed: conta padrão ── */
-  async function seedDefault() {
-    const users = loadUsers();
-    if (!users.find(u => u.email === 'daniel@danielveiculos.com.br')) {
-      const hash = await hashPassword('admin');
-      users.push({
-        id:        genToken(),
-        name:      'Gestor Daniel',
-        email:     'daniel@danielveiculos.com.br',
-        role:      'admin',
-        avatar:    'DV',
-        createdAt: new Date().toISOString(),
-        hash,
-      });
-      saveUsers(users);
-    }
-  }
-
-  /* ── API Pública ── */
   return {
-    async init() { await seedDefault(); },
+    async init() {
+      // Monitora o estado de autenticação real no Firebase
+      return new Promise(resolve => {
+        firebase.auth().onAuthStateChanged(user => {
+          currentUser = user;
+          resolve(user);
+        });
+      });
+    },
 
-    async register({ name, email, password, role = 'viewer', photo = '' }) {
+    async register({ name, email, password, photo = '' }) {
       if (!name || !email || !password) throw new Error('Preencha todos os campos.');
       if (password.length < 6) throw new Error('Senha deve ter no mínimo 6 caracteres.');
 
-      const users = loadUsers();
-      if (users.find(u => u.email.toLowerCase() === email.toLowerCase()))
-        throw new Error('E-mail já cadastrado.');
+      // Registra o usuário no Firebase Auth
+      const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+      
+      // Atualiza o perfil com o nome e a foto (se houver)
+      await cred.user.updateProfile({
+        displayName: name,
+        photoURL: photo || ''
+      });
 
-      const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-      const user = {
-        id:        genToken(),
-        name:      name.trim(),
-        email:     email.toLowerCase().trim(),
-        role,
-        avatar:    initials,
-        photo:     photo || '',
-        createdAt: new Date().toISOString(),
-        hash:      await hashPassword(password),
-      };
-      users.push(user);
-      saveUsers(users);
-      return { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, photo: user.photo };
+      // Cadastra o usuário também no Realtime Database para listagem
+      firebase.database().ref('dv_users/' + cred.user.uid).set({
+        name,
+        email,
+        role: 'admin', // Definimos todos como admin inicialmente
+        photo: photo || '',
+        createdAt: new Date().toISOString()
+      });
+
+      return cred.user;
     },
 
     async login(email, password) {
-      const users = loadUsers();
-      const user = users.find(u => u.email.toLowerCase() === email.toLowerCase().trim());
-      if (!user) throw new Error('E-mail não encontrado.');
-
-      const hash = await hashPassword(password);
-      if (hash !== user.hash) throw new Error('Senha incorreta.');
-
-      const token = genToken();
-      const session = {
-        token,
-        userId:    user.id,
-        name:      user.name,
-        email:     user.email,
-        role:      user.role,
-        avatar:    user.avatar,
-        photo:     user.photo || '',
-        expiresAt: Date.now() + 8 * 60 * 60 * 1000, // 8h
-      };
-      sessionStorage.setItem(KEYS.session, JSON.stringify(session));
-      return session;
+      if (!email || !password) throw new Error('Informe e-mail e senha.');
+      const cred = await firebase.auth().signInWithEmailAndPassword(email, password);
+      currentUser = cred.user;
+      return this.getSession();
     },
 
     logout() {
-      sessionStorage.removeItem(KEYS.session);
+      return firebase.auth().signOut();
     },
 
     getSession() {
-      try {
-        const s = JSON.parse(sessionStorage.getItem(KEYS.session));
-        if (!s) return null;
-        if (Date.now() > s.expiresAt) { this.logout(); return null; }
-        return s;
-      } catch { return null; }
+      if (!currentUser) return null;
+      return {
+        id: currentUser.uid,
+        name: currentUser.displayName || 'Gestor',
+        email: currentUser.email,
+        photo: currentUser.photoURL || '',
+        avatar: (currentUser.displayName || 'User').substring(0, 2).toUpperCase(),
+        role: 'admin' // Para o frontend atual, assumimos admin
+      };
     },
 
-    isLoggedIn() { return !!this.getSession(); },
+    isLoggedIn() { return !!currentUser; },
 
+    // Lista de usuários busca direto do Realtime Database (Firebase Auth não permite listar via client-side)
     listUsers() {
-      return loadUsers().map(({ hash, ...rest }) => rest); // nunca expõe o hash
+      // Vamos tentar buscar do localStorage que o database sincroniza, ou vazio se não tiver
+      try {
+        const raw = localStorage.getItem('dv_users');
+        if (raw) {
+          const obj = JSON.parse(raw);
+          return Object.values(obj);
+        }
+      } catch (e) {}
+      return [];
     },
 
     deleteUser(id) {
-      const users = loadUsers().filter(u => u.id !== id);
-      saveUsers(users);
+      // Nota: Excluir usuário do Auth requer Firebase Admin (servidor).
+      // Por segurança, via client-side não podemos deletar outros usuários.
+      alert("Para excluir usuários reais, utilize o painel do Firebase Authentication.");
     },
   };
 })();

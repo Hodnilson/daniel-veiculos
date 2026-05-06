@@ -165,16 +165,27 @@ const UI = {
     </form>`;
   },
 
-  _previewVehiclePhoto(input) {
+  async _previewVehiclePhoto(input) {
     const file = input.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const z = document.getElementById('v-photo-zone');
-      const h = document.getElementById('v-photo-value');
-      if (z) z.innerHTML = `<img src="${e.target.result}" style="width:100%;height:118px;object-fit:cover">`;
-      if (h) h.value = e.target.result;
-    };
-    reader.readAsDataURL(file);
+    const z = document.getElementById('v-photo-zone');
+    const h = document.getElementById('v-photo-value');
+    if (z) z.innerHTML = `<div style="text-align:center;padding:18px"><p style="color:#39FF14;font-size:13px;font-weight:600;">Enviando foto...</p></div>`;
+    
+    try {
+      // Tenta enviar para o Firebase Storage
+      const url = await DB.uploadPhoto(file);
+      if (z) z.innerHTML = `<img src="${url}" style="width:100%;height:118px;object-fit:cover">`;
+      if (h) h.value = url;
+    } catch (err) {
+      // Fallback: se a regra do Storage falhar ou não estiver configurado, salva em Base64
+      console.warn("Storage falhou, usando Base64", err);
+      const reader = new FileReader();
+      reader.onload = e => {
+        if (z) z.innerHTML = `<img src="${e.target.result}" style="width:100%;height:118px;object-fit:cover">`;
+        if (h) h.value = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
   },
 
 
@@ -219,16 +230,25 @@ const UI = {
     </form>`;
   },
 
-  _previewCustomerPhoto(input) {
+  async _previewCustomerPhoto(input) {
     const file = input.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const av  = document.getElementById('c-avatar-preview');
-      const val = document.getElementById('c-photo-value');
-      if (av)  { av.textContent = ''; av.style.background = `url(${e.target.result}) center/cover`; }
-      if (val) val.value = e.target.result;
-    };
-    reader.readAsDataURL(file);
+    const av  = document.getElementById('c-avatar-preview');
+    const val = document.getElementById('c-photo-value');
+    if (av) { av.textContent = '...'; }
+
+    try {
+      const url = await DB.uploadPhoto(file);
+      if (av)  { av.textContent = ''; av.style.background = `url(${url}) center/cover`; }
+      if (val) val.value = url;
+    } catch (err) {
+      console.warn("Storage falhou, usando Base64", err);
+      const reader = new FileReader();
+      reader.onload = e => {
+        if (av)  { av.textContent = ''; av.style.background = `url(${e.target.result}) center/cover`; }
+        if (val) val.value = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
   },
 
   _updateAvatarInitials(input) {
