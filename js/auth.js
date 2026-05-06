@@ -32,7 +32,7 @@ const Auth = (() => {
       firebase.database().ref('dv_users/' + cred.user.uid).set({
         name,
         email,
-        role: 'admin', // Definimos todos como admin inicialmente
+        role: 'vendedor', // Agora o padrão é vendedor
         photo: photo || '',
         createdAt: new Date().toISOString()
       });
@@ -53,13 +53,27 @@ const Auth = (() => {
 
     getSession() {
       if (!currentUser) return null;
+      let role = 'vendedor';
+      try {
+        const raw = localStorage.getItem('dv_users');
+        if (raw) {
+          const users = JSON.parse(raw);
+          if (users[currentUser.uid] && users[currentUser.uid].role) {
+            role = users[currentUser.uid].role;
+          } else {
+             // Se não existe no localStorage ainda (primeiro login, ou erro de sync), fallback.
+             role = 'vendedor';
+          }
+        }
+      } catch (e) {}
+
       return {
         id: currentUser.uid,
         name: currentUser.displayName || 'Gestor',
         email: currentUser.email,
         photo: currentUser.photoURL || '',
         avatar: (currentUser.displayName || 'User').substring(0, 2).toUpperCase(),
-        role: 'admin' // Para o frontend atual, assumimos admin
+        role: role
       };
     },
 
@@ -76,6 +90,10 @@ const Auth = (() => {
         }
       } catch (e) {}
       return [];
+    },
+
+    updateRole(id, role) {
+      return firebase.database().ref('dv_users/' + id).update({ role: role });
     },
 
     deleteUser(id) {

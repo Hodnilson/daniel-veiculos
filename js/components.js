@@ -322,6 +322,7 @@ const UI = {
     const statuses = {'proposal':'Em Proposta', 'completed':'Concluído'};
     const optSt = Object.entries(statuses).map(([v,l]) => `<option value="${v}"${t.status===v?' selected':''}>${l}</option>`).join('');
     const cl = DB.customers();
+    const vh = DB.vehicles();
     return `<form id="t-form" onsubmit="App.saveTransaction(event)" autocomplete="off">
       <input type="hidden" name="id" value="${t.id || ''}">
       <div class="form-row">
@@ -333,7 +334,14 @@ const UI = {
             <div class="t-client-empty" style="display:none;padding:10px 14px;color:#baccb0;font-size:13px;text-align:center">Nenhum cliente encontrado</div>
           </div>
         </div>
-        <div class="form-group"><label class="form-label">Veículo / Descrição *</label><input name="vehicle" value="${t.vehicle||''}" required placeholder="Ex: BMW M4"></div>
+        <div class="form-group" id="t-vehicle-group" style="position:relative">
+          <label class="form-label">Veículo *</label>
+          <input type="text" name="vehicle" id="t-vehicle-search" placeholder="Buscar veículo..." value="${t.vehicle||''}" required autocomplete="off" onfocus="document.getElementById('t-vehicle-list').style.display='block'" onkeyup="UI.filterDropdown(this.value, 't-vehicle-item', 't-vehicle-empty')" style="width:100%;background:#292a2a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 13px;color:#e3e2e2;font-size:14px;outline:none;font-family:Inter">
+          <div id="t-vehicle-list" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1f2020;border:1px solid rgba(255,255,255,.2);border-radius:8px;max-height:180px;overflow-y:auto;z-index:9999;margin-top:4px;box-shadow:0 10px 25px rgba(0,0,0,0.5)">
+            ${vh.map(v => `<div class="t-vehicle-item hover:bg-white/5" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);color:#e3e2e2;font-size:13px" onclick="document.getElementById('t-vehicle-search').value='${v.brand} ${v.model} (${v.plate || v.year})';document.querySelector('input[name=value]').value='${v.price}';this.parentNode.style.display='none'">${v.brand} ${v.model} (${v.plate || v.year}) - ${Fmt.money(v.price)}</div>`).join('')}
+            <div class="t-vehicle-empty" style="display:none;padding:10px 14px;color:#baccb0;font-size:13px;text-align:center">Nenhum veículo encontrado</div>
+          </div>
+        </div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Valor (R$) *</label><input name="value" type="number" min="0" value="${t.value||''}" required placeholder="150000"></div>
@@ -348,6 +356,10 @@ const UI = {
         if (!e.target.closest('#t-client-group')) {
           const list = document.getElementById('t-client-list');
           if (list) list.style.display = 'none';
+        }
+        if (!e.target.closest('#t-vehicle-group')) {
+          const vlist = document.getElementById('t-vehicle-list');
+          if (vlist) vlist.style.display = 'none';
         }
       });
     </script>`;

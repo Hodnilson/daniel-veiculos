@@ -260,16 +260,22 @@ const App = {
   /* ── Users Panel ── */
   _showUsers() {
     const users = Auth.listUsers();
+    const isAdmin = this.session?.role === 'admin';
     const rows = users.map(u => `<div class="flex items-center gap-md p-md hover:bg-white/5 rounded-lg">
-      <div class="w-9 h-9 rounded-full bg-primary-container/10 flex items-center justify-center text-primary-container font-bold text-sm">${u.avatar}</div>
-      <div class="flex-1"><p class="font-bold text-on-surface text-sm">${u.name}</p><p class="text-xs text-on-surface-variant">${u.email}</p></div>
-      <span class="text-[10px] font-label-caps ${u.role==='admin'?'text-primary-container':'text-on-surface-variant'}">${u.role.toUpperCase()}</span>
-      ${u.email !== this.session?.email ? `<button class="btn btn-danger btn-sm" onclick="if(confirm('Excluir usuário?')){Auth.deleteUser('${u.id}');App._showUsers();}">✕</button>` : ''}
+      <div class="w-9 h-9 rounded-full bg-primary-container/10 flex items-center justify-center text-primary-container font-bold text-sm shrink-0">${u.avatar || u.name.substring(0,2).toUpperCase()}</div>
+      <div class="flex-1 overflow-hidden"><p class="font-bold text-on-surface text-sm truncate">${u.name}</p><p class="text-xs text-on-surface-variant truncate">${u.email}</p></div>
+      ${isAdmin && u.id !== this.session?.id ? `
+        <select class="bg-surface-container border border-white/10 rounded text-xs px-2 py-1 outline-none text-on-surface" onchange="Auth.updateRole('${u.id}', this.value);App.toast('Permissão atualizada!')">
+          <option value="vendedor" ${u.role==='vendedor'?'selected':''}>Vendedor</option>
+          <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+        </select>
+      ` : `<span class="text-[10px] font-label-caps ${u.role==='admin'?'text-primary-container':'text-on-surface-variant'}">${(u.role||'vendedor').toUpperCase()}</span>`}
+      ${isAdmin && u.id !== this.session?.id ? `<button class="btn btn-danger btn-sm p-1" title="Instruções de Exclusão" onclick="Auth.deleteUser('${u.id}')">✕</button>` : ''}
     </div>`).join('');
     this.openModal('Usuários do Sistema',
       `<div class="space-y-xs">${rows}</div>`,
       `<button class="btn btn-ghost" onclick="App.closeModal()">Fechar</button>
-       <button class="btn btn-primary" onclick="App.closeModal();App._showPanel&&null;document.getElementById('login-screen').style.display='flex';document.getElementById('panel-register').classList.remove('hidden');document.getElementById('panel-login').classList.add('hidden');document.getElementById('app-shell').style.display='none'">Novo Usuário</button>`
+       ${isAdmin ? `<button class="btn btn-primary" onclick="App.closeModal();document.getElementById('login-screen').style.display='flex';document.getElementById('panel-register').classList.remove('hidden');document.getElementById('panel-login').classList.add('hidden');document.getElementById('app-shell').style.display='none'">Novo Usuário</button>` : ''}`
     );
   },
 
