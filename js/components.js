@@ -77,6 +77,7 @@ const UI = {
       <td class="px-lg py-md"><p class="text-sm font-data-mono">${c.lastContact || '—'}</p><p class="text-[11px] text-on-surface-variant">${c.via || ''}</p></td>
       <td class="px-lg py-md">
         <div class="flex gap-xs">
+          <button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-green-400 hover:border-green-400/50 border border-white/5 transition-all" onclick="App.openWhatsApp('${c.id}')" title="WhatsApp Inteligente"><span class="material-symbols-outlined text-[16px]">chat</span></button>
           <button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary-container hover:border-primary-container/50 border border-white/5 transition-all" onclick="App.viewCustomer('${c.id}')" title="Ver"><span class="material-symbols-outlined text-[16px]">visibility</span></button>
           <button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary-container hover:border-primary-container/50 border border-white/5 transition-all" onclick="App.editCustomer('${c.id}')" title="Editar"><span class="material-symbols-outlined text-[16px]">edit</span></button>
           <button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-error hover:border-error/50 border border-white/5 transition-all" onclick="App.confirmDeleteCustomer('${c.id}')" title="Excluir"><span class="material-symbols-outlined text-[16px]">delete</span></button>
@@ -162,6 +163,9 @@ const UI = {
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Placa</label><input name="plate" value="${v.plate||''}" placeholder="ABC-1D23"></div>
+        <div class="form-group"><label class="form-label">Custos Extras (R$)</label><input name="costs" type="number" min="0" value="${v.costs||''}" placeholder="Manutenção, etc" ${App.session?.role!=='admin'?'disabled':''}></div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label class="form-label">Status</label><select name="status" onchange="document.getElementById('v-sold-to-group').style.display=this.value==='sold'?'block':'none'">${opt(['available','reserved','sold','vitrine','proposal'], v.status)}</select></div>
       </div>
       <div class="form-group" id="v-sold-to-group" style="display:${v.status==='sold'?'block':'none'};position:relative;">
@@ -417,6 +421,19 @@ const UI = {
       const c = DB.customer(v.soldTo);
       soldToBlock = c ? f('Vendido para', c.name, true) : f('Vendido para', 'Cliente Desconhecido');
     }
+    let profitBlock = '';
+    if (App.session?.role === 'admin' && v.costs) {
+      const costs = Number(v.costs) || 0;
+      const profit = Number(v.price) - costs;
+      profitBlock = `
+        <div class="col-span-2 bg-primary-container/5 rounded-lg p-md border border-primary-container/20 mt-2">
+          <div class="flex justify-between items-center">
+            <div><p class="text-[10px] text-on-surface-variant uppercase font-label-caps">Custos Extras</p><p class="text-sm text-error">${Fmt.money(costs)}</p></div>
+            <div class="text-right"><p class="text-[10px] text-primary-container uppercase font-label-caps">Lucro Líquido Estimado</p><p class="text-lg font-bold text-primary-container">${Fmt.money(profit)}</p></div>
+          </div>
+        </div>`;
+    }
+
     return `<div class="grid grid-cols-2 gap-md">
       ${f('Marca', v.brand)} ${f('Modelo', v.model)}
       ${f('Ano', v.year)} ${f('Preço', Fmt.money(v.price), true)}
@@ -425,13 +442,17 @@ const UI = {
       ${f('Placa', v.plate || '—')} ${f('Status', stMap[v.status] || v.status)}
       ${soldToBlock}
       ${v.createdAt ? f('Cadastrado em', Fmt.date(v.createdAt)) : ''}
+      ${profitBlock}
     </div>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="w-full btn btn-primary flex justify-center items-center gap-sm" onclick="App.printFichaVehicle(${v.id})" style="flex:1">
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="w-full btn btn-primary flex justify-center items-center gap-sm" onclick="App.printFichaVehicle(${v.id})" style="flex:1;min-width:140px">
         <span class="material-symbols-outlined text-[18px]">directions_car</span> Ficha do Veículo
       </button>
+      <button class="w-full btn flex justify-center items-center gap-sm" onclick="App.printConsignacaoVehicle(${v.id})" style="flex:1;min-width:140px;background:#1b1c1c;color:#e3e2e2;border:1px solid rgba(255,255,255,.1)">
+        <span class="material-symbols-outlined text-[18px]">contract</span> Consignação
+      </button>
       ${v.status === 'sold' ? `
-      <button class="w-full btn flex justify-center items-center gap-sm" onclick="App.printVendaVehicle(${v.id})" style="flex:1;background:#292a2a;color:#e3e2e2;border:1px solid rgba(255,255,255,.1)">
+      <button class="w-full btn flex justify-center items-center gap-sm" onclick="App.printVendaVehicle(${v.id})" style="flex:1;min-width:140px;background:#292a2a;color:#e3e2e2;border:1px solid rgba(255,255,255,.1)">
         <span class="material-symbols-outlined text-[18px]">receipt_long</span> Recibo de Venda
       </button>
       ` : ''}

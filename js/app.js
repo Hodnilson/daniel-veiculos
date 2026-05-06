@@ -170,13 +170,19 @@ const App = {
   },
 
   _buildNav() {
-    document.getElementById('nav-menu').innerHTML = this.navItems.map(n =>
+    const role = this.session?.role || 'admin';
+    const items = this.navItems.filter(n => {
+      if (role !== 'admin' && (n.id === 'financeiro' || n.id === 'relatorios')) return false;
+      return true;
+    });
+
+    document.getElementById('nav-menu').innerHTML = items.map(n =>
       `<a class="nav-link flex items-center gap-md px-lg py-sm rounded-lg transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high" data-page="${n.id}" href="#/${n.id}">
         <span class="material-symbols-outlined">${n.icon}</span>
         <span class="text-sm font-bold">${n.label}</span>
       </a>`
     ).join('');
-    document.getElementById('bottom-nav').innerHTML = this.navItems.slice(0,5).map(n =>
+    document.getElementById('bottom-nav').innerHTML = items.slice(0,5).map(n =>
       `<a class="bnav flex flex-col items-center gap-xs py-xs text-on-surface-variant" data-page="${n.id}" href="#/${n.id}">
         <span class="material-symbols-outlined text-[22px]">${n.icon}</span>
         <span class="text-[9px] font-bold">${n.label}</span>
@@ -223,11 +229,16 @@ const App = {
     const el = document.getElementById('page-content');
     const fn = Pages[hash];
     el.style.opacity = '0';
+    
+    if (hash === 'vitrine') document.body.classList.add('vitrine-mode');
+    else document.body.classList.remove('vitrine-mode');
+
     requestAnimationFrame(() => {
       el.innerHTML = fn ? fn() : '<div class="flex h-full items-center justify-center"><p class="text-on-surface-variant text-h3">Página não encontrada</p></div>';
       el.scrollTop = 0;
       el.style.transition = 'opacity .2s';
       el.style.opacity = '1';
+      if (hash === 'dashboard') setTimeout(() => this.renderChart(), 100);
     });
   },
 
@@ -273,6 +284,63 @@ const App = {
       location.hash = '#/estoque';
       setTimeout(() => { const el = document.getElementById('f-search'); if(el){el.value=q;this.filterVehicles();} }, 300);
     }
+  },
+
+  renderChart() {
+    const ctx = document.getElementById('financeChart');
+    if (!ctx || !window.Chart) return;
+    const txs = DB.transactions().filter(t => t.status === 'completed');
+    
+    // Agrupar por mês
+    const monthly = {};
+    txs.forEach(t => {
+      const date = t.due ? new Date(t.due) : new Date(t.createdAt);
+      const m = date.toLocaleString('pt-BR', {month:'short', year:'2-digit'});
+      monthly[m] = (monthly[m] || 0) + Number(t.value);
+    });
+    
+    const labels = Object.keys(monthly).reverse().slice(-6);
+    const data = labels.map(l => monthly[l]);
+
+    // Se o gráfico já existe, destrua para recriar
+    if (window.financeChartInstance) window.financeChartInstance.destroy();
+
+    window.financeChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels.length ? labels : ['Mês Atual'],
+        datasets: [{
+          label: 'Faturamento (R$)',
+          data: data.length ? data : [0],
+          borderColor: '#39FF14',
+          backgroundColor: 'rgba(57,255,20,0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#1f2020',
+          pointBorderColor: '#39FF14',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { 
+            beginAtZero: true, 
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#baccb0', callback: value => 'R$ ' + (value/1000) + 'k' }
+          },
+          x: { 
+            grid: { display: false },
+            ticks: { color: '#baccb0' }
+          }
+        }
+      }
+    });
   },
 
   /* ── Vehicle CRUD ── */
@@ -408,10 +476,74 @@ const App = {
     });
   },
 
+  printConsignacaoVehicle(id) {
+    const v = DB.vehicle(id); if (!v) return;
+    const c = v.soldTo ? DB.customer(v.soldTo) : null;
+    this.toast('Gerando Contrato de Consignação...', '');
+    const div = document.createElement('div');
+    div.style.padding = '40px';
+    div.style.background = '#fff';
+    div.style.color = '#000';
+    div.style.fontFamily = 'Arial, sans-serif';
+    div.innerHTML = `
+      <h1 style="font-size:32px;color:#000;text-align:center;margin-bottom:10px;font-weight:800;text-transform:uppercase">Daniel Veículos</h1>
+      <p style="text-align:center;color:#555;margin-bottom:30px;letter-spacing:1px;text-transform:uppercase">Contrato de Consignação de Veículo</p>
+      
+      <p style="text-align:justify;font-size:14px;color:#444;line-height:1.5;margin-bottom:20px">
+        Pelo presente instrumento, a empresa DANIEL VEÍCULOS (Consignatária) e o(a) Sr(a) <strong>${c ? c.name : '________________________________________'}</strong> (Consignante), portador(a) do CPF/CNPJ <strong>${c && c.cpf ? c.cpf : '____________________'}</strong>, acordam as seguintes condições para a consignação do veículo abaixo descrito:
+      </p>
+
+      <div style="border:1px solid #ccc;padding:20px;border-radius:8px;margin-bottom:20px">
+        <h3 style="margin-top:0;border-bottom:1px solid #ccc;padding-bottom:10px">Dados do Veículo</h3>
+        <p style="margin-bottom:8px"><strong>Marca/Modelo:</strong> ${v.brand} ${v.model}</p>
+        <p style="margin-bottom:8px"><strong>Ano:</strong> ${v.year}</p>
+        <p style="margin-bottom:8px"><strong>Cor:</strong> ${v.color || '-'}</p>
+        <p style="margin-bottom:8px"><strong>Placa:</strong> ${v.plate || '-'}</p>
+        <p style="margin-bottom:8px"><strong>Quilometragem:</strong> ${Fmt.km(v.km)}</p>
+      </div>
+
+      <div style="background:#f4f4f4;padding:20px;border-radius:8px;margin-bottom:20px;text-align:center">
+        <p style="margin:0;font-size:18px">Valor Acordado para Venda (Mínimo)</p>
+        <h2 style="margin:5px 0 0;font-size:32px;color:#000">${Fmt.money(v.price)}</h2>
+      </div>
+
+      <h3 style="font-size:16px;margin-bottom:10px">Cláusulas:</h3>
+      <ol style="font-size:13px;color:#444;line-height:1.6;margin-bottom:40px;text-align:justify;padding-left:20px">
+        <li>A Consignatária compromete-se a expor e intermediar a venda do veículo acima descrito.</li>
+        <li>O Consignante declara ser o legítimo proprietário do veículo e que o mesmo encontra-se livre de quaisquer ônus, multas ou restrições judiciais até a presente data.</li>
+        <li>A comissão da loja será de ______% sobre o valor final de venda, ou valor fixo de R$ _____________, a ser descontado no ato do pagamento ao Consignante.</li>
+        <li>O veículo permanecerá no pátio da Consignatária pelo prazo inicial de _____ dias.</li>
+        <li>A Consignatária não se responsabiliza por danos pré-existentes ou defeitos mecânicos ocultos.</li>
+      </ol>
+      
+      <div style="display:flex;justify-content:space-between;margin-top:60px">
+        <div style="width:45%;text-align:center;border-top:1px solid #000;padding-top:10px">
+          <p style="margin:0">DANIEL VEÍCULOS</p>
+          <p style="font-size:12px;color:#666">Consignatária</p>
+        </div>
+        <div style="width:45%;text-align:center;border-top:1px solid #000;padding-top:10px">
+          <p style="margin:0">${c ? c.name : 'CONSIGNANTE'}</p>
+          <p style="font-size:12px;color:#666">Consignante</p>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:40px;color:#777;font-size:12px">Data: ${new Date().toLocaleDateString('pt-BR')}</div>
+    `;
+    const opt = {
+      margin:       10,
+      filename:     `Consignacao_${v.model.replace(/\s/g,'_')}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(div).save().then(() => {
+      this.toast('Contrato gerado com sucesso!');
+    });
+  },
+
   saveVehicle(e) {
     e.preventDefault();
     const d = Object.fromEntries(new FormData(e.target));
-    d.year = +d.year; d.price = +d.price; d.km = +d.km;
+    d.year = +d.year; d.price = +d.price; d.km = +d.km; d.costs = Number(d.costs) || 0;
     if (d.id) { DB.updateVehicle(d.id, d); this.toast('Veículo atualizado!'); }
     else { delete d.id; DB.addVehicle(d); this.toast('Veículo cadastrado!'); }
     this.closeModal();
@@ -455,6 +587,14 @@ const App = {
       : '<tr><td colspan="6" class="text-center py-xl text-on-surface-variant">Nenhum cliente encontrado.</td></tr>';
     const cnt = document.getElementById('crm-count');
     if (cnt) cnt.textContent = `${cl.length} cliente(s)`;
+  },
+
+  openWhatsApp(id) {
+    const c = DB.customer(id); if(!c||!c.phone) return;
+    const phone = c.phone.replace(/\D/g, '');
+    const vehicle = c.interest ? `na ${c.interest}` : 'nos nossos veículos';
+    const msg = encodeURIComponent(`Olá ${c.name.split(' ')[0]}, aqui é da Daniel Veículos! Notamos o seu interesse ${vehicle}, podemos conversar?`);
+    window.open(`https://api.whatsapp.com/send?phone=55${phone}&text=${msg}`, '_blank');
   },
 
   addCustomer() {

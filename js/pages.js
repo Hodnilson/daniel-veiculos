@@ -11,12 +11,13 @@ const Pages = {
       ${UI.kpi('Veículos em Pátio',k.lotVehicles,'Unidades','inventory_2',false)}
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-md">
-      <div class="glass-panel p-lg rounded-xl border border-white/5">
+      <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col">
         <div class="flex justify-between items-center mb-lg">
-          <div><h4 class="font-h3 text-h3 text-on-surface">Performance Semanal</h4><p class="text-on-surface-variant text-sm">Comparativo de visitas vs. negociações</p></div>
+          <div><h4 class="font-h3 text-h3 text-on-surface">Lucro Real & Faturamento</h4><p class="text-on-surface-variant text-sm">Desempenho financeiro (Últimos meses)</p></div>
         </div>
-        <div class="flex items-end justify-between gap-sm" style="height:120px">${bars}</div>
-        <div class="flex gap-lg mt-md"><div class="flex items-center gap-xs"><div class="w-3 h-3 rounded-sm bg-primary-container"></div><span class="text-xs text-on-surface-variant">Negociações</span></div><div class="flex items-center gap-xs"><div class="w-3 h-3 rounded-sm bg-primary-container/20"></div><span class="text-xs text-on-surface-variant">Visitas</span></div></div>
+        <div style="flex:1;position:relative;min-height:180px">
+          <canvas id="financeChart"></canvas>
+        </div>
       </div>
       <div class="glass-panel rounded-xl border border-white/5 flex flex-col">
         <div class="p-lg border-b border-white/5"><h4 class="font-h3 text-on-surface">Funil CRM Hoje</h4></div>
@@ -177,9 +178,14 @@ const Pages = {
 
   vitrine() {
     const cars=DB.vitrineVehicles();
-    return `<div class="glass-panel p-lg rounded-xl mb-md border border-primary-container/20 bg-primary-container/5 flex flex-wrap justify-between items-center gap-md">
-      <div><h3 class="font-h3 text-primary-container">Vitrine de Luxo</h3><p class="text-on-surface-variant text-sm">Veículos premium em destaque — clique para gerenciar</p></div>
-      <button class="btn btn-primary" onclick="App.addVehicle()"><span class="material-symbols-outlined text-[16px]">add</span>Publicar Veículo</button>
+    return `
+    <div style="position:fixed;top:20px;right:20px;z-index:9999" class="vitrine-only">
+      <button onclick="location.hash='#/dashboard'" class="btn" style="background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);color:#fff;border:1px solid rgba(255,255,255,0.2)">
+        <span class="material-symbols-outlined text-[18px]">close</span> Sair da Vitrine
+      </button>
+    </div>
+    <div class="glass-panel p-lg rounded-xl mb-md border border-primary-container/20 bg-primary-container/5 flex flex-wrap justify-between items-center gap-md">
+      <div class="text-center w-full"><h3 class="font-h3 text-primary-container" style="font-size:28px">Daniel Veículos — Acervo Premium</h3><p class="text-on-surface-variant text-sm mt-xs">Escolha o seu próximo sonho</p></div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md pb-xl">${cars.length ? cars.map(v=>UI.vehicleCard(v)).join('') : '<div class="col-span-full text-center py-xl text-on-surface-variant">Nenhum veículo em destaque. Adicione veículos com preço acima de R$1M ou status "vitrine".</div>'}</div>`;
   },

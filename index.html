@@ -35,6 +35,15 @@
       font-family: Inter, sans-serif
     }
 
+    /* ── Modo Vitrine ── */
+    .vitrine-mode aside#sidebar { display: none !important; }
+    .vitrine-mode header { display: none !important; }
+    .vitrine-mode nav#bottom-nav { display: none !important; }
+    .vitrine-mode main { padding-top: 20px !important; }
+    .vitrine-mode .vitrine-hide { display: none !important; }
+    .vitrine-mode .vitrine-only { display: block !important; }
+    .vitrine-only { display: none; }
+
     /* ── Fundo vivo com blobs animados ── */
     @keyframes blobFloat1 {
 
@@ -781,6 +790,9 @@
 
   <!-- html2pdf para relatórios -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Firebase SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
