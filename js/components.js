@@ -384,9 +384,16 @@ const UI = {
       ${soldToBlock}
       ${v.createdAt ? f('Cadastrado em', Fmt.date(v.createdAt)) : ''}
     </div>
-    <button class="w-full mt-md btn btn-primary flex justify-center items-center gap-sm" onclick="App.printFichaVehicle(${v.id})">
-      <span class="material-symbols-outlined text-[18px]">print</span> Gerar Ficha de Vidro (PDF)
-    </button>`;
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="w-full btn btn-primary flex justify-center items-center gap-sm" onclick="App.printFichaVehicle(${v.id})" style="flex:1">
+        <span class="material-symbols-outlined text-[18px]">directions_car</span> Ficha do Veículo
+      </button>
+      ${v.status === 'sold' ? `
+      <button class="w-full btn flex justify-center items-center gap-sm" onclick="App.printVendaVehicle(${v.id})" style="flex:1;background:#292a2a;color:#e3e2e2;border:1px solid rgba(255,255,255,.1)">
+        <span class="material-symbols-outlined text-[18px]">receipt_long</span> Recibo de Venda
+      </button>
+      ` : ''}
+    </div>`;
   },
 
   /* ─── Customer Detail ─── */

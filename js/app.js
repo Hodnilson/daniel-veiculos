@@ -347,6 +347,67 @@ const App = {
     });
   },
 
+  printVendaVehicle(id) {
+    const v = DB.vehicle(id); if (!v) return;
+    const c = v.soldTo ? DB.customer(v.soldTo) : null;
+    this.toast('Gerando Recibo...', '');
+    const div = document.createElement('div');
+    div.style.padding = '40px';
+    div.style.background = '#fff';
+    div.style.color = '#000';
+    div.style.fontFamily = 'Arial, sans-serif';
+    div.innerHTML = `
+      <h1 style="font-size:32px;color:#000;text-align:center;margin-bottom:10px;font-weight:800;text-transform:uppercase">Daniel Veículos</h1>
+      <p style="text-align:center;color:#555;margin-bottom:30px;letter-spacing:1px;text-transform:uppercase">Recibo de Venda de Veículo</p>
+      
+      <div style="border:1px solid #ccc;padding:20px;border-radius:8px;margin-bottom:20px">
+        <h3 style="margin-top:0;border-bottom:1px solid #ccc;padding-bottom:10px">Dados do Veículo</h3>
+        <p style="margin-bottom:8px"><strong>Marca/Modelo:</strong> ${v.brand} ${v.model}</p>
+        <p style="margin-bottom:8px"><strong>Ano:</strong> ${v.year}</p>
+        <p style="margin-bottom:8px"><strong>Cor:</strong> ${v.color || '-'}</p>
+        <p style="margin-bottom:8px"><strong>Placa:</strong> ${v.plate || '-'}</p>
+        <p style="margin-bottom:8px"><strong>Quilometragem:</strong> ${Fmt.km(v.km)}</p>
+      </div>
+
+      <div style="border:1px solid #ccc;padding:20px;border-radius:8px;margin-bottom:20px">
+        <h3 style="margin-top:0;border-bottom:1px solid #ccc;padding-bottom:10px">Dados do Comprador</h3>
+        <p style="margin-bottom:8px"><strong>Nome:</strong> ${c ? c.name : '________________________________________'}</p>
+        <p style="margin-bottom:8px"><strong>CPF/CNPJ:</strong> ${c && c.cpf ? c.cpf : '____________________'}</p>
+        <p style="margin-bottom:8px"><strong>Endereço:</strong> ${c && c.city ? c.city : '________________________________________'}</p>
+        <p style="margin-bottom:8px"><strong>Telefone:</strong> ${c && c.phone ? c.phone : '____________________'}</p>
+      </div>
+
+      <div style="background:#f4f4f4;padding:20px;border-radius:8px;margin-bottom:40px;text-align:center">
+        <p style="margin:0;font-size:18px">Valor Total da Negociação</p>
+        <h2 style="margin:5px 0 0;font-size:32px;color:#000">${Fmt.money(v.price)}</h2>
+      </div>
+
+      <p style="text-align:justify;font-size:14px;color:#444;line-height:1.5">Reconhecemos a venda do veículo acima descrito pelo valor especificado, o qual foi recebido em sua totalidade. O veículo é entregue no estado em que se encontra e o comprador assume, a partir desta data, a responsabilidade civil e criminal por quaisquer ocorrências com o referido veículo.</p>
+      
+      <div style="display:flex;justify-content:space-between;margin-top:80px">
+        <div style="width:45%;text-align:center;border-top:1px solid #000;padding-top:10px">
+          <p style="margin:0">DANIEL VEÍCULOS</p>
+          <p style="font-size:12px;color:#666">Vendedor</p>
+        </div>
+        <div style="width:45%;text-align:center;border-top:1px solid #000;padding-top:10px">
+          <p style="margin:0">${c ? c.name : 'COMPRADOR'}</p>
+          <p style="font-size:12px;color:#666">Comprador</p>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:40px;color:#777;font-size:12px">Data: ${new Date().toLocaleDateString('pt-BR')}</div>
+    `;
+    const opt = {
+      margin:       10,
+      filename:     `Recibo_${v.model.replace(/\s/g,'_')}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(div).save().then(() => {
+      this.toast('Recibo gerado com sucesso!');
+    });
+  },
+
   saveVehicle(e) {
     e.preventDefault();
     const d = Object.fromEntries(new FormData(e.target));
