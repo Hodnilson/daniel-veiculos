@@ -284,44 +284,66 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      pointer-events: none
+      pointer-events: none;
     }
 
     .toast {
-      padding: 11px 18px;
-        opacity: 0;
-        transform: translateX(30px)
-      }
+      background: rgba(31, 32, 32, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: all;
+      animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
+
+    .toast.success { border-left: 4px solid #39FF14; }
+    .toast.err { border-left: 4px solid #ff4444; }
+
+    @keyframes toastIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .toast.out { transform: translateX(40px); opacity: 0; transition: 0.3s ease-in; }
 
     /* Modal */
     #modal-overlay {
       position: fixed;
       inset: 0;
       z-index: 9000;
-      background: rgba(0, 0, 0, .75);
-      backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
       opacity: 0;
-      transition: .2s;
-      pointer-events: none
+      transition: 0.3s ease;
+      pointer-events: none;
     }
 
     #modal-overlay.show {
       opacity: 1;
-      pointer-events: all
+      pointer-events: all;
     }
 
     #modal-container {
       background: #1f2020;
-      border: 1px solid rgba(255, 255, 255, .1);
-      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
       max-width: 600px;
       width: 94%;
       max-height: 88vh;
-      overflow-y: auto
+      overflow-y: auto;
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #modal-overlay.show #modal-container {
+      transform: scale(1);
     }
 
     .modal-head {
@@ -585,7 +607,6 @@
             <div style="position:relative">
               <input id="login-pass" class="neon-input" type="password" autocomplete="current-password" required style="padding-left:14px;padding-right:46px" />
               <span id="toggle-pass" class="material-symbols-outlined"
-                onclick="const inp=document.getElementById('login-pass'); inp.type=inp.type==='password'?'text':'password'; this.textContent=inp.type==='password'?'visibility':'visibility_off'"
                 style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#baccb0;cursor:pointer;font-size:20px;z-index:10">visibility</span>
             </div>
           </div>

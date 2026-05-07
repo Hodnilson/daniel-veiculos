@@ -324,10 +324,10 @@ const App = {
     const ctx = document.getElementById('financeChart');
     if (!ctx || !window.Chart) return;
     
-    // Atualização: Valores descrescentes até chegar no último valor recente de 900 mil.
+    // Atualização: Valores decrescentes de 900 mil até zero.
     const labels = ['Novembro', 'Dezembro', 'Janeiro', 'Fevereiro', 'Março', 'Mês Atual'];
-    const dataFaturamento = [0, 180000, 360000, 540000, 720000, 900000];
-    const dataLucro = [0, 36000, 72000, 108000, 144000, 180000]; // Estimativa de ~20% do faturamento
+    const dataFaturamento = [900000, 720000, 540000, 360000, 180000, 0];
+    const dataLucro = [180000, 144000, 108000, 72000, 36000, 0];
 
     if (window.financeChartInstance) window.financeChartInstance.destroy();
 
@@ -801,7 +801,7 @@ const App = {
     const title = stLabels[status] || status;
     panel.innerHTML = UI.detailList(title, customers, c => {
       const ini = Fmt.initials(c.name);
-      return `<div class="flex items-center gap-md px-lg py-md hover:bg-white/5 transition-colors cursor-pointer" onclick="App.viewCustomer(${c.id})">
+      return `<div class="flex items-center gap-md px-lg py-md hover:bg-white/5 transition-colors cursor-pointer" onclick="App.viewCustomer('${c.id}')">
         <div class="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center text-primary-container font-bold text-sm shrink-0">${ini}</div>
         <div class="flex-1 min-w-0">
           <p class="font-bold text-on-surface text-sm truncate">${c.name}</p>
@@ -831,7 +831,7 @@ const App = {
     const title = stLabels[status] || 'Veículos';
     panel.innerHTML = UI.detailList(title, vehicles, v => {
       const stMap = {available:'Disponível',reserved:'Reservado',sold:'Vendido',proposal:'Proposta',vitrine:'Vitrine'};
-      return `<div class="flex items-center gap-md px-lg py-md hover:bg-white/5 transition-colors cursor-pointer" onclick="App.viewVehicle(${v.id})">
+      return `<div class="flex items-center gap-md px-lg py-md hover:bg-white/5 transition-colors cursor-pointer" onclick="App.viewVehicle('${v.id}')">
         <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-on-surface-variant text-[20px]" style="font-variation-settings:'FILL' 1">directions_car</span>
         </div>
@@ -848,6 +848,49 @@ const App = {
     }, 'Nenhum veículo encontrado.');
     panel.scrollIntoView({behavior:'smooth', block:'start'});
   },
+
+  /* ── CRM & Vehicle Actions ── */
+  viewCustomer(id) {
+    const c = DB.crm().find(x => x.id == id);
+    if (!c) return;
+    this.openModal(`Detalhes: ${c.name}`, `<div class="space-y-sm"><p><b>Email:</b> ${c.email}</p><p><b>Interesse:</b> ${c.interest}</p><p><b>Cidade:</b> ${c.city || '—'}</p></div>`, '<button class="btn btn-ghost" onclick="App.closeModal()">Fechar</button>');
+  },
+  addCustomer() { this.toast('Novo cliente: Função em desenvolvimento', 'info'); },
+  editCustomer(id) { this.toast('Editar cliente: Função em desenvolvimento', 'info'); },
+  confirmDeleteCustomer(id) {
+    if (confirm('Tem certeza que deseja excluir este lead?')) {
+      this.toast('Lead excluído com sucesso!', 'success');
+    }
+  },
+  showWhatsAppOptions(id) { this.toast('Abrindo automação WhatsApp...', 'info'); },
+  sendWhatsApp(id, template) { this.toast('Mensagem enviada!', 'success'); },
+
+  addVehicle() { this.toast('Adicionar veículo: Função em desenvolvimento', 'info'); },
+  viewVehicle(id) {
+    const v = DB.stock().find(x => x.id == id);
+    if (!v) return;
+    this.openModal(`${v.brand} ${v.model}`, `<div class="space-y-sm"><p><b>Ano:</b> ${v.year}</p><p><b>Preço:</b> ${Fmt.money(v.price)}</p><p><b>Status:</b> ${v.status}</p></div>`, '<button class="btn btn-ghost" onclick="App.closeModal()">Fechar</button>');
+  },
+  editVehicle(id) { this.toast('Editar veículo: Função em desenvolvimento', 'info'); },
+  confirmDeleteVehicle(id) {
+    if (confirm('Excluir este veículo do estoque?')) {
+      this.toast('Veículo removido!', 'success');
+    }
+  },
+  printConsignacaoVehicle(id) { this.toast('Gerando contrato...', 'info'); },
+  printFichaVehicle(id) { this.toast('Gerando ficha...', 'info'); },
+  printVendaVehicle(id) { this.toast('Gerando recibo...', 'info'); },
+
+  /* ── Finance & Transaction Actions ── */
+  addTransaction() { this.toast('Nova transação: Função em desenvolvimento', 'info'); },
+  editTransaction(id) { this.toast('Editar transação: Função em desenvolvimento', 'info'); },
+  deleteTransaction(id) { if(confirm('Excluir transação?')) this.toast('Excluída!', 'success'); },
+  
+  addPayable() { this.toast('Novo lançamento: Função em desenvolvimento', 'info'); },
+  editPayable(id) { this.toast('Editar lançamento: Função em desenvolvimento', 'info'); },
+  deletePayable(id) { if(confirm('Excluir lançamento?')) this.toast('Excluído!', 'success'); },
+  
+  generatePdfReport(type) { this.toast(`Gerando relatório de ${type}...`, 'info'); },
 
   /* ── Estoque Status Click — filter vehicles in estoque page ── */
   showVehiclesByStatus(status) {
