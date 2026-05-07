@@ -595,21 +595,20 @@
         </p>
         <form id="login-form" autocomplete="on" novalidate>
           <div style="margin-bottom:14px">
-            <label class="form-label">E-mail Corporativo</label>
+            <label class="form-label" style="display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:16px">mail</span> E-mail Corporativo</label>
             <div style="position:relative">
-              <span class="material-symbols-outlined input-icon">mail</span>
-              <input id="login-email" class="neon-input" type="email" placeholder="nome@danielveiculos.com.br" autocomplete="email" required />
+              <input id="login-email" class="neon-input" style="padding-left:14px" type="email" autocomplete="email" required />
             </div>
           </div>
           <div style="margin-bottom:6px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <label class="form-label" style="margin-bottom:0">Senha</label>
-              <a style="font-size:12px;color:#39FF14;cursor:pointer;font-weight:600">Esqueceu?</a>
+              <label class="form-label" style="margin-bottom:0;display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:16px">lock</span> Senha</label>
+              <a style="font-size:12px;color:#39FF14;cursor:pointer;font-weight:600" onclick="const e=document.getElementById('login-email').value; if(e) App.toast('Link de recuperação enviado para: ' + e); else App.toast('Digite seu e-mail para recuperar a senha.', 'err')">Esqueceu?</a>
             </div>
             <div style="position:relative">
-              <span class="material-symbols-outlined input-icon">lock</span>
-              <input id="login-pass" class="neon-input" type="password" placeholder="••••••••" autocomplete="current-password" required style="padding-right:46px" />
+              <input id="login-pass" class="neon-input" type="password" autocomplete="current-password" required style="padding-left:14px;padding-right:46px" />
               <span id="toggle-pass" class="material-symbols-outlined"
+                onclick="const inp=document.getElementById('login-pass'); inp.type=inp.type==='password'?'text':'password'; this.textContent=inp.type==='password'?'visibility':'visibility_off'"
                 style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#baccb0;cursor:pointer;font-size:20px;z-index:10">visibility</span>
             </div>
           </div>
