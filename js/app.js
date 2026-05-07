@@ -8,9 +8,14 @@ const App = {
     {id:'financeiro',icon:'payments',label:'Financeiro'},
     {id:'crm',icon:'group',label:'CRM'},
     {id:'relatorios',icon:'analytics',label:'Relatórios'},
+    {id:'performance',icon:'emoji_events',label:'Metas & Perf.'},
+    {id:'ged',icon:'description',label:'Documentos'},
+    {id:'marketing',icon:'campaign',label:'Marketing'},
+    {id:'agenda',icon:'calendar_month',label:'Agenda'},
+    {id:'financiamento',icon:'credit_score',label:'Crédito'},
     {id:'vitrine',icon:'auto_awesome',label:'Vitrine'},
   ],
-  titles: {dashboard:'Visão Geral',estoque:'Estoque Premium',financeiro:'Gestão Financeira',crm:'CRM Premium',relatorios:'Relatórios Analíticos',vitrine:'Vitrine de Luxo'},
+  titles: {dashboard:'Visão Geral',estoque:'Estoque Premium',financeiro:'Gestão Financeira',crm:'CRM Premium',relatorios:'Relatórios Analíticos',performance:'Metas & Performance',ged:'Central de Documentos',marketing:'Marketing & ROI',agenda:'Agenda Estratégica',financiamento:'Crédito & Financiamento',vitrine:'Vitrine de Luxo'},
   fabCfg: {estoque:{icon:'add',label:'Novo Veículo'},crm:{icon:'person_add',label:'Novo Cliente'}},
 
   async init() {
@@ -171,13 +176,14 @@ const App = {
 
   _buildNav() {
     const role = this.session?.role || 'admin';
+    const adminOnly = ['financeiro', 'relatorios', 'performance', 'ged', 'marketing', 'agenda'];
     const items = this.navItems.filter(n => {
-      if (role !== 'admin' && (n.id === 'financeiro' || n.id === 'relatorios')) return false;
+      if (role !== 'admin' && adminOnly.includes(n.id)) return false;
       return true;
     });
 
-    const itemsGerencia = items.filter(n => ['dashboard', 'financeiro', 'relatorios'].includes(n.id));
-    const itemsVendas = items.filter(n => ['estoque', 'crm', 'vitrine'].includes(n.id));
+    const itemsGerencia = items.filter(n => ['dashboard', 'financeiro', 'relatorios', 'performance', 'ged', 'marketing', 'agenda'].includes(n.id));
+    const itemsVendas = items.filter(n => ['estoque', 'crm', 'financiamento', 'vitrine'].includes(n.id));
 
     let html = '';
     

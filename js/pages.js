@@ -189,4 +189,247 @@ const Pages = {
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md pb-xl">${cars.length ? cars.map(v=>UI.vehicleCard(v)).join('') : '<div class="col-span-full text-center py-xl text-on-surface-variant">Nenhum veículo em destaque. Adicione veículos com preço acima de R$1M ou status "vitrine".</div>'}</div>`;
   },
+
+  performance() {
+    return `<div class="glass-panel p-lg rounded-xl border border-white/5 mb-md">
+      <div class="flex justify-between items-center mb-lg">
+        <div><h3 class="font-h3 text-on-surface">Desempenho da Equipe</h3><p class="text-sm text-on-surface-variant">Acompanhamento de metas de vendas (Mês Atual)</p></div>
+        <button class="btn btn-ghost btn-sm"><span class="material-symbols-outlined text-[16px]">tune</span> Configurar Metas</button>
+      </div>
+      <div class="space-y-lg">
+        ${['João Silva', 'Maria Fernandes', 'Carlos Eduardo'].map((n, i) => {
+          const meta = 500000;
+          const current = 150000 * (3 - i) + 50000;
+          const pct = Math.min(Math.round((current/meta)*100), 100);
+          const c = pct >= 100 ? 'bg-primary-container' : pct > 50 ? 'bg-yellow-400' : 'bg-error';
+          const ct = pct >= 100 ? 'text-primary-container' : pct > 50 ? 'text-yellow-400' : 'text-error';
+          return `<div class="bg-white/5 p-md rounded-lg">
+            <div class="flex justify-between mb-xs">
+              <span class="font-bold text-sm text-on-surface">${n}</span>
+              <span class="text-sm font-data-mono ${ct}">${Fmt.money(current)} <span class="text-on-surface-variant">/ ${Fmt.moneyShort(meta)}</span></span>
+            </div>
+            <div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+              <div class="${c} h-full transition-all" style="width:${pct}%"></div>
+            </div>
+            <div class="flex justify-between mt-xs">
+              <span class="text-[10px] text-on-surface-variant uppercase tracking-widest">Comissão Estimada: <span class="text-on-surface">${Fmt.money(current * 0.015)}</span></span>
+              <span class="text-[10px] ${ct} font-bold">${pct}% da Meta</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  },
+
+  ged() {
+    return `<div class="grid grid-cols-1 md:grid-cols-3 gap-md mb-md">
+      <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col items-center text-center hover:border-primary-container/30 transition-colors cursor-pointer" onclick="App.toast('Selecione um veículo no Estoque para gerar')">
+        <span class="material-symbols-outlined text-[40px] text-primary-container mb-md">assignment</span>
+        <h4 class="font-bold text-on-surface mb-xs">Contrato de Consignação</h4>
+        <p class="text-xs text-on-surface-variant mb-md">Gera contrato padrão para entrada de veículos de terceiros.</p>
+        <button class="btn btn-ghost btn-sm w-full mt-auto">Acessar Modelos</button>
+      </div>
+      <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col items-center text-center hover:border-blue-400/30 transition-colors cursor-pointer" onclick="App.toast('Selecione um cliente no CRM para gerar')">
+        <span class="material-symbols-outlined text-[40px] text-blue-400 mb-md">drive_eta</span>
+        <h4 class="font-bold text-on-surface mb-xs">Termo de Test-Drive</h4>
+        <p class="text-xs text-on-surface-variant mb-md">Termo de responsabilidade civil e multas para test-drives.</p>
+        <button class="btn btn-ghost btn-sm w-full mt-auto">Acessar Modelos</button>
+      </div>
+      <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col items-center text-center hover:border-yellow-400/30 transition-colors cursor-pointer" onclick="App.toast('Selecione um veículo vendido para gerar')">
+        <span class="material-symbols-outlined text-[40px] text-yellow-400 mb-md">receipt_long</span>
+        <h4 class="font-bold text-on-surface mb-xs">Recibo de Compra e Venda</h4>
+        <p class="text-xs text-on-surface-variant mb-md">Documento oficial de transferência de responsabilidade.</p>
+        <button class="btn btn-ghost btn-sm w-full mt-auto">Acessar Modelos</button>
+      </div>
+    </div>
+    <div class="glass-panel p-lg rounded-xl border border-white/5">
+      <h3 class="font-h3 text-on-surface mb-md">Documentos Recentes</h3>
+      <div class="text-center py-xl text-on-surface-variant text-sm">Nenhum documento gerado recentemente.</div>
+    </div>`;
+  },
+
+  marketing() {
+    const leads = DB.kpi().newLeads || 45;
+    const invest = 2500;
+    const cpl = invest / leads;
+    return `<div class="grid grid-cols-1 md:grid-cols-3 gap-md mb-md">
+      ${UI.kpi('Investimento (Mês)', Fmt.money(invest), 'Ads + Portais', 'payments', false)}
+      ${UI.kpi('Leads Gerados', leads, 'Total CRM', 'group_add', false)}
+      ${UI.kpi('Custo Por Lead (CPL)', Fmt.money(cpl), 'Eficiência', 'troubleshoot', true)}
+    </div>
+    <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col lg:flex-row gap-lg">
+      <div class="flex-1">
+        <h3 class="font-h3 text-on-surface mb-md">Lançar Despesa de Marketing</h3>
+        <form class="space-y-md" onsubmit="event.preventDefault();App.toast('Despesa registrada com sucesso!');this.reset()">
+          <div class="form-group mb-0"><label class="form-label">Canal (Ex: Webmotors, Instagram)</label><input class="neon-input" type="text" required></div>
+          <div class="form-group mb-0"><label class="form-label">Valor Investido (R$)</label><input class="neon-input" type="number" step="0.01" required></div>
+          <button type="submit" class="btn btn-primary w-full">Registrar Investimento</button>
+        </form>
+      </div>
+      <div class="flex-1 bg-white/5 p-lg rounded-lg border border-white/5">
+        <h3 class="font-h3 text-on-surface mb-md">Retorno Sobre Investimento (ROI)</h3>
+        <div class="space-y-sm">
+          <div class="flex justify-between items-center border-b border-white/5 py-sm"><span class="text-on-surface-variant text-sm">Receita Atribuída ao Marketing</span><span class="font-data-mono font-bold text-primary-container">${Fmt.money(180000)}</span></div>
+          <div class="flex justify-between items-center border-b border-white/5 py-sm"><span class="text-on-surface-variant text-sm">Custo por Aquisição (CPA)</span><span class="font-data-mono font-bold">${Fmt.money(invest/3)}</span></div>
+          <div class="flex justify-between items-center py-sm"><span class="text-on-surface-variant text-sm">ROI Geral</span><span class="font-data-mono font-bold text-primary-container">7,200%</span></div>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  agenda() {
+    return `<div class="glass-panel p-lg rounded-xl border border-white/5">
+      <div class="flex justify-between items-center mb-lg">
+        <h3 class="font-h3 text-on-surface">Agenda Estratégica da Semana</h3>
+        <button class="btn btn-primary btn-sm"><span class="material-symbols-outlined text-[16px]">add</span>Novo Compromisso</button>
+      </div>
+      <div class="space-y-md">
+        <div class="flex gap-md p-md bg-primary-container/10 border border-primary-container/30 rounded-lg items-center">
+          <div class="bg-primary-container text-on-primary rounded p-sm text-center min-w-[60px]">
+            <p class="text-[10px] font-bold uppercase">Hoje</p><p class="text-xl font-bold">14</p>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-bold text-primary-container text-sm">Entrega de Veículo: Porsche 911</h4>
+            <p class="text-xs text-on-surface-variant">Cliente: Roberto Almeida — Preparação de laço e champagne.</p>
+          </div>
+          <button class="btn btn-ghost btn-sm">Detalhes</button>
+        </div>
+        <div class="flex gap-md p-md bg-white/5 border border-white/5 rounded-lg items-center">
+          <div class="bg-surface-container-highest text-on-surface rounded p-sm text-center min-w-[60px]">
+            <p class="text-[10px] font-bold uppercase">Amanhã</p><p class="text-xl font-bold">15</p>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-bold text-on-surface text-sm">Test-Drive: BMW X6</h4>
+            <p class="text-xs text-on-surface-variant">Cliente: Juliana Costa — Veículo precisa estar lavado e abastecido.</p>
+          </div>
+          <button class="btn btn-ghost btn-sm">Detalhes</button>
+        </div>
+        <div class="flex gap-md p-md bg-white/5 border border-white/5 rounded-lg items-center">
+          <div class="bg-surface-container-highest text-on-surface rounded p-sm text-center min-w-[60px]">
+            <p class="text-[10px] font-bold uppercase">Sex</p><p class="text-xl font-bold">17</p>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-bold text-on-surface text-sm">Reunião de Alinhamento de Vendas</h4>
+            <p class="text-xs text-on-surface-variant">Toda a equipe — Revisão das metas da segunda quinzena.</p>
+          </div>
+          <button class="btn btn-ghost btn-sm">Detalhes</button>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  financiamento() {
+    return `<div class="grid grid-cols-1 lg:grid-cols-2 gap-md mb-md">
+      <!-- Simulador de Financiamento -->
+      <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col">
+        <div class="flex justify-between items-center mb-md">
+          <h3 class="font-h3 text-on-surface">Simulador de Parcelas</h3>
+          <span class="material-symbols-outlined text-primary-container">calculate</span>
+        </div>
+        <p class="text-sm text-on-surface-variant mb-lg">Calcule rapidamente as parcelas na mesa de negociação para aumentar a conversão.</p>
+        <div class="space-y-md flex-1">
+          <div class="form-group mb-0"><label class="form-label">Valor do Veículo (R$)</label><input class="neon-input" type="number" id="sim-valor" value="150000"></div>
+          <div class="form-group mb-0"><label class="form-label">Valor da Entrada (R$)</label><input class="neon-input" type="number" id="sim-entrada" value="50000"></div>
+          <div class="grid grid-cols-2 gap-md">
+            <div class="form-group mb-0"><label class="form-label">Taxa Mensal (%)</label><input class="neon-input" type="number" step="0.01" id="sim-taxa" value="1.59"></div>
+            <div class="form-group mb-0"><label class="form-label">Prazo (Meses)</label>
+              <select class="neon-input" id="sim-prazo">
+                <option value="12">12x</option><option value="24">24x</option><option value="36">36x</option><option value="48" selected>48x</option><option value="60">60x</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary w-full mt-md" onclick="
+            const v = document.getElementById('sim-valor').value;
+            const e = document.getElementById('sim-entrada').value;
+            const t = document.getElementById('sim-taxa').value / 100;
+            const p = document.getElementById('sim-prazo').value;
+            const saldo = v - e;
+            const parcela = (saldo * t) / (1 - Math.pow(1 + t, -p));
+            document.getElementById('sim-resultado').innerHTML = '<div class=&quot;text-on-surface-variant text-sm mb-xs&quot;>Valor da Parcela Estimada:</div><div class=&quot;text-h2 font-h2 text-primary-container&quot;>' + Fmt.money(parcela) + '</div>';
+          ">Simular Parcelas</button>
+        </div>
+        <div id="sim-resultado" class="mt-lg p-md bg-white/5 rounded-lg border border-white/5 text-center min-h-[90px] flex flex-col justify-center">
+          <span class="text-on-surface-variant text-sm">Insira os dados e simule</span>
+        </div>
+      </div>
+
+      <!-- Calculadora de Margem / Troca -->
+      <div class="glass-panel p-lg rounded-xl border border-white/5 flex flex-col">
+        <div class="flex justify-between items-center mb-md">
+          <h3 class="font-h3 text-on-surface">Análise de Troca (Carro na Negociação)</h3>
+          <span class="material-symbols-outlined text-yellow-400">swap_horiz</span>
+        </div>
+        <p class="text-sm text-on-surface-variant mb-lg">Avalie na hora se pegar o carro do cliente na troca trará lucro real para a loja.</p>
+        <div class="space-y-md flex-1">
+          <div class="form-group mb-0"><label class="form-label">Valor FIPE do Usado (R$)</label><input class="neon-input" type="number" id="troca-fipe" value="80000"></div>
+          <div class="form-group mb-0"><label class="form-label">Valor de Avaliação/Compra (R$)</label><input class="neon-input" type="number" id="troca-compra" value="65000"></div>
+          <div class="form-group mb-0"><label class="form-label">Custo Estimado de Reparo/Preparação (R$)</label><input class="neon-input" type="number" id="troca-reparo" value="2500"></div>
+          <button class="btn btn-ghost w-full border border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 mt-md" onclick="
+            const f = document.getElementById('troca-fipe').value;
+            const c = document.getElementById('troca-compra').value;
+            const r = document.getElementById('troca-reparo').value;
+            const lucroEstimado = f - c - r;
+            const margem = (lucroEstimado / f) * 100;
+            const cor = lucroEstimado > 0 ? 'text-primary-container' : 'text-error';
+            document.getElementById('troca-resultado').innerHTML = '<div class=&quot;flex justify-between&quot;><span class=&quot;text-on-surface-variant&quot;>Lucro Estimado na Revenda:</span><span class=&quot;font-data-mono font-bold ' + cor + '&quot;>' + Fmt.money(lucroEstimado) + '</span></div><div class=&quot;flex justify-between mt-xs&quot;><span class=&quot;text-on-surface-variant&quot;>Margem (% da FIPE):</span><span class=&quot;font-data-mono font-bold ' + cor + '&quot;>' + margem.toFixed(1) + '%</span></div>';
+          ">Analisar Viabilidade</button>
+        </div>
+        <div id="troca-resultado" class="mt-lg p-md bg-white/5 rounded-lg border border-white/5 min-h-[90px] flex flex-col justify-center">
+           <span class="text-on-surface-variant text-sm text-center">Calcule a margem do veículo de entrada</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Esteira de Aprovação de Crédito -->
+    <div class="glass-panel p-lg rounded-xl border border-white/5">
+      <div class="flex justify-between items-center mb-lg">
+        <div><h3 class="font-h3 text-on-surface">Esteira de Crédito (Bancos)</h3><p class="text-sm text-on-surface-variant">Acompanhe o status do financiamento dos clientes</p></div>
+        <button class="btn btn-primary btn-sm"><span class="material-symbols-outlined text-[16px]">add</span>Nova Ficha</button>
+      </div>
+      <div class="overflow-x-auto pb-sm custom-scroll">
+        <div class="flex gap-md min-w-[800px]">
+          <!-- Coluna 1: Análise -->
+          <div class="flex-1 bg-surface-container-low rounded-lg p-md border border-white/5">
+            <h4 class="font-bold text-on-surface-variant text-sm mb-md flex justify-between">EM ANÁLISE <span class="bg-white/10 px-2 rounded-full text-xs">2</span></h4>
+            <div class="space-y-sm">
+              <div class="bg-surface-container-high p-sm rounded border border-white/5 card-interactive">
+                <p class="font-bold text-sm text-on-surface">Marcos Silva</p>
+                <p class="text-xs text-on-surface-variant mb-sm">BMW 320i — R$ 250.000</p>
+                <div class="flex gap-xs"><span class="bg-yellow-500/20 text-yellow-400 text-[9px] px-2 py-0.5 rounded uppercase font-bold">Santander</span><span class="bg-yellow-500/20 text-yellow-400 text-[9px] px-2 py-0.5 rounded uppercase font-bold">Itaú</span></div>
+              </div>
+              <div class="bg-surface-container-high p-sm rounded border border-white/5 card-interactive">
+                <p class="font-bold text-sm text-on-surface">Ana Paula</p>
+                <p class="text-xs text-on-surface-variant mb-sm">Jeep Compass — R$ 140.000</p>
+                <div class="flex gap-xs"><span class="bg-yellow-500/20 text-yellow-400 text-[9px] px-2 py-0.5 rounded uppercase font-bold">BV Financeira</span></div>
+              </div>
+            </div>
+          </div>
+          <!-- Coluna 2: Aprovado -->
+          <div class="flex-1 bg-primary-container/5 rounded-lg p-md border border-primary-container/20">
+            <h4 class="font-bold text-primary-container text-sm mb-md flex justify-between">APROVADOS <span class="bg-primary-container/20 px-2 rounded-full text-xs">1</span></h4>
+            <div class="space-y-sm">
+              <div class="bg-surface-container-high p-sm rounded border border-primary-container/30 card-interactive">
+                <p class="font-bold text-sm text-on-surface">Roberto Costa</p>
+                <p class="text-xs text-on-surface-variant mb-sm">Audi Q3 — R$ 190.000</p>
+                <p class="text-[10px] text-on-surface-variant mb-xs">Taxa aprovada: 1.49%</p>
+                <div class="flex gap-xs"><span class="bg-primary-container/20 text-primary-container text-[9px] px-2 py-0.5 rounded uppercase font-bold">Safra</span></div>
+              </div>
+            </div>
+          </div>
+          <!-- Coluna 3: Recusado -->
+          <div class="flex-1 bg-error/5 rounded-lg p-md border border-error/20">
+            <h4 class="font-bold text-error text-sm mb-md flex justify-between">RECUSADOS / PENDÊNCIAS <span class="bg-error/20 px-2 rounded-full text-xs">1</span></h4>
+            <div class="space-y-sm">
+              <div class="bg-surface-container-high p-sm rounded border border-error/30 card-interactive">
+                <p class="font-bold text-sm text-on-surface">Carlos Eduardo</p>
+                <p class="text-xs text-on-surface-variant mb-sm">Honda Civic — R$ 120.000</p>
+                <p class="text-[10px] text-error mb-xs">Motivo: Score Baixo</p>
+                <div class="flex gap-xs"><span class="bg-error/20 text-error text-[9px] px-2 py-0.5 rounded uppercase font-bold">Itaú</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
 };
