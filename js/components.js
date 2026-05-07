@@ -77,7 +77,7 @@ const UI = {
       <td class="px-lg py-md"><p class="text-sm font-data-mono">${c.lastContact || '—'}</p><p class="text-[11px] text-on-surface-variant">${c.via || ''}</p></td>
       <td class="px-lg py-md">
         <div class="flex gap-xs">
-          <button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-green-400 hover:border-green-400/50 border border-white/5 transition-all" onclick="App.openWhatsApp('${c.id}')" title="WhatsApp Inteligente"><span class="material-symbols-outlined text-[16px]">chat</span></button>
+          <button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-green-400 hover:border-green-400/50 border border-white/5 transition-all" onclick="App.showWhatsAppOptions('${c.id}')" title="WhatsApp Automação"><span class="material-symbols-outlined text-[16px]">chat</span></button>
           <button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary-container hover:border-primary-container/50 border border-white/5 transition-all" onclick="App.viewCustomer('${c.id}')" title="Ver"><span class="material-symbols-outlined text-[16px]">visibility</span></button>
           <button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary-container hover:border-primary-container/50 border border-white/5 transition-all" onclick="App.editCustomer('${c.id}')" title="Editar"><span class="material-symbols-outlined text-[16px]">edit</span></button>
           <button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-error hover:border-error/50 border border-white/5 transition-all" onclick="App.confirmDeleteCustomer('${c.id}')" title="Excluir"><span class="material-symbols-outlined text-[16px]">delete</span></button>
@@ -96,8 +96,9 @@ const UI = {
       proposal:  'bg-orange-400 text-black',
       vitrine:   'bg-purple-500 text-white',
     };
-    const bgStyle = v.photo ? `style="background:url(${v.photo}) center/cover"` : '';
-    const iconOpacity = v.photo ? '0' : '.12';
+    const photoUrl = v.photos && v.photos.length > 0 ? v.photos[0] : (v.photo || '');
+    const bgStyle = photoUrl ? `style="background:url(${photoUrl}) center/cover"` : '';
+    const iconOpacity = photoUrl ? '0' : '.12';
     return `<div class="glass-panel card-interactive rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-primary-container/30 transition-all duration-300">
       <div class="h-44 bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center relative overflow-hidden" ${bgStyle}>
         <span class="material-symbols-outlined text-on-surface-variant transition-transform group-hover:scale-110 duration-500" style="font-size:72px;opacity:${iconOpacity};font-variation-settings:'FILL' 1">directions_car</span>
@@ -130,20 +131,20 @@ const UI = {
   vehicleForm(v) {
     v = v || {};
     const opt = (arr, sel) => arr.map(x => `<option${sel===x?' selected':''}>${x}</option>`).join('');
-    const ep = v.photo || '';
+    const photos = v.photos || (v.photo ? [v.photo] : []);
+    const photosJson = encodeURIComponent(JSON.stringify(photos));
     const cl = DB.customers();
     const optCl = cl.map(c => `<option value="${c.id}" ${v.soldTo===c.id?'selected':''}>${c.name}</option>`).join('');
     return `<form id="v-form" onsubmit="App.saveVehicle(event)" autocomplete="off">
       <input type="hidden" name="id" value="${v.id || ''}">
-      <input type="hidden" name="photo" id="v-photo-value" value="${ep}">
+      <input type="hidden" name="photos" id="v-photo-value" value="${photosJson}">
       <div style="margin-bottom:16px">
-        <label class="form-label">Fotos do Veículo</label>
-        <div id="v-photo-zone" onclick="document.getElementById('v-photo-input').click()"
-          style="border:2px dashed rgba(57,255,20,.22);border-radius:12px;min-height:118px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s;overflow:hidden;background:rgba(57,255,20,.03)"
-          onmouseenter="this.style.borderColor='rgba(57,255,20,.55)'" onmouseleave="this.style.borderColor='rgba(57,255,20,.22)'">
-          ${ep ? `<img src="${ep}" style="width:100%;height:118px;object-fit:cover">` : `<div style="text-align:center;padding:18px"><span class="material-symbols-outlined" style="font-size:36px;color:rgba(57,255,20,.45);font-variation-settings:'FILL' 1">add_photo_alternate</span><p style="color:#baccb0;font-size:13px;font-weight:600;margin-top:6px">Clique para adicionar fotos</p><p style="color:#3c4b35;font-size:11px">JPG, PNG, WEBP · Suporta Alta Definição (HD)</p></div>`}
+        <label class="form-label">Galeria de Fotos do Veículo</label>
+        <div id="v-photo-zone" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:8px">
+           ${photos.map((p, i) => `<div style="position:relative;height:80px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)"><img src="${p}" style="width:100%;height:100%;object-fit:cover"><button type="button" onclick="UI._removeVehiclePhoto(${i})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer">✕</button></div>`).join('')}
         </div>
-        <input id="v-photo-input" type="file" accept="image/*" style="display:none" onchange="UI._previewVehiclePhoto(this)">
+        <button type="button" class="btn btn-ghost" style="width:100%;border-style:dashed;padding:12px" onclick="document.getElementById('v-photo-input').click()"><span class="material-symbols-outlined text-[18px]">add_photo_alternate</span> Adicionar Fotos</button>
+        <input id="v-photo-input" type="file" accept="image/*" multiple style="display:none" onchange="UI._previewVehiclePhoto(this)">
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Marca *</label><input name="brand" value="${v.brand||''}" required placeholder="Ex: BMW"></div>
@@ -194,24 +195,54 @@ const UI = {
     </script>`;
   },
 
-  async _previewVehiclePhoto(input) {
-    const file = input.files[0]; if (!file) return;
+  _renderVehiclePhotos() {
+    const valInput = document.getElementById('v-photo-value');
+    if (!valInput) return;
+    const photos = JSON.parse(decodeURIComponent(valInput.value) || '[]');
     const z = document.getElementById('v-photo-zone');
-    const h = document.getElementById('v-photo-value');
-    if (z) z.innerHTML = `<div style="text-align:center;padding:18px"><p style="color:#39FF14;font-size:13px;font-weight:600;">Otimizando HD...</p></div>`;
+    if (z) {
+      z.innerHTML = photos.map((p, i) => `<div style="position:relative;height:80px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)"><img src="${p}" style="width:100%;height:100%;object-fit:cover"><button type="button" onclick="UI._removeVehiclePhoto(${i})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer">✕</button></div>`).join('');
+    }
+  },
+
+  _removeVehiclePhoto(index) {
+    const valInput = document.getElementById('v-photo-value');
+    if (!valInput) return;
+    const photos = JSON.parse(decodeURIComponent(valInput.value) || '[]');
+    photos.splice(index, 1);
+    valInput.value = encodeURIComponent(JSON.stringify(photos));
+    this._renderVehiclePhotos();
+  },
+
+  async _previewVehiclePhoto(input) {
+    const files = input.files; if (!files.length) return;
+    const valInput = document.getElementById('v-photo-value');
+    const photos = JSON.parse(decodeURIComponent(valInput.value) || '[]');
     
-    this._compressImage(file, async (blob, dataUrl) => {
-      if (z) z.innerHTML = `<div style="text-align:center;padding:18px"><p style="color:#39FF14;font-size:13px;font-weight:600;">Enviando para nuvem...</p></div>`;
-      try {
-        const url = await DB.uploadPhoto(blob);
-        if (z) z.innerHTML = `<img src="${url}" style="width:100%;height:118px;object-fit:cover">`;
-        if (h) h.value = url;
-      } catch (err) {
-        console.warn("Storage falhou, usando Base64", err);
-        if (z) z.innerHTML = `<img src="${dataUrl}" style="width:100%;height:118px;object-fit:cover">`;
-        if (h) h.value = dataUrl;
-      }
-    });
+    // Add loading placeholders
+    const z = document.getElementById('v-photo-zone');
+    for (let i = 0; i < files.length; i++) {
+      if (z) z.innerHTML += `<div class="photo-loading" style="height:80px;border-radius:8px;background:rgba(57,255,20,0.1);display:flex;align-items:center;justify-content:center;border:1px dashed rgba(57,255,20,0.4)"><span class="material-symbols-outlined status-pulse" style="color:#39FF14">sync</span></div>`;
+    }
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      await new Promise(resolve => {
+        this._compressImage(file, async (blob, dataUrl) => {
+          try {
+            const url = await DB.uploadPhoto(blob);
+            photos.push(url);
+          } catch (err) {
+            console.warn("Storage falhou, usando Base64", err);
+            photos.push(dataUrl);
+          }
+          resolve();
+        });
+      });
+    }
+    valInput.value = encodeURIComponent(JSON.stringify(photos));
+    this._renderVehiclePhotos();
+    input.value = ''; // Reset input
   },
 
   _compressImage(file, callback) {
@@ -288,7 +319,9 @@ const UI = {
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Canal de Contato</label><select name="via">${optVi}</select></div>
+        <div class="form-group"><label class="form-label">Próximo Follow-up</label><input name="followUpDate" type="datetime-local" value="${c.followUpDate||''}"></div>
       </div>
+      <div class="form-group"><label class="form-label">Notas de Follow-up / Observações</label><textarea name="followUpNotes" rows="2" placeholder="Ex: Ligar na sexta-feira à tarde...">${c.followUpNotes||''}</textarea></div>
     </form>`;
   },
 
@@ -446,7 +479,21 @@ const UI = {
         </div>`;
     }
 
+    const photos = v.photos || (v.photo ? [v.photo] : []);
+    let galleryBlock = '';
+    if (photos.length > 0) {
+      galleryBlock = `
+        <div class="col-span-2 mb-md">
+          <p class="text-[10px] text-on-surface-variant uppercase font-label-caps mb-xs">Galeria de Fotos</p>
+          <div class="flex gap-sm overflow-x-auto custom-scroll pb-sm">
+            ${photos.map(p => `<a href="${p}" target="_blank" class="shrink-0 block w-32 h-24 rounded-lg overflow-hidden border border-white/10 hover:border-primary-container transition-colors"><img src="${p}" style="width:100%;height:100%;object-fit:cover"></a>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     return `<div class="grid grid-cols-2 gap-md">
+      ${galleryBlock}
       ${f('Marca', v.brand)} ${f('Modelo', v.model)}
       ${f('Ano', v.year)} ${f('Preço', Fmt.money(v.price), true)}
       ${f('KM', Fmt.km(v.km))} ${f('Cor', v.color || '—')}
@@ -478,12 +525,32 @@ const UI = {
       <p class="font-bold text-on-surface">${val || '—'}</p>
     </div>`;
     const stLabels = {'new-lead':'Novo Lead','test-drive':'Test-Drive','negotiation':'Negociação','proposal':'Proposta','closed':'Vendido'};
+    
+    let followUpBlock = '';
+    if (c.followUpDate || c.followUpNotes) {
+      followUpBlock = `
+        <div class="col-span-2 bg-primary-container/10 rounded-lg p-md border border-primary-container/20 mt-2">
+          <p class="text-[10px] text-primary-container uppercase font-label-caps mb-xs">Agendamento de Follow-up</p>
+          <div class="flex flex-col gap-xs">
+            ${c.followUpDate ? `<p class="text-sm font-bold text-on-surface"><span class="material-symbols-outlined text-[16px] align-middle mr-1">calendar_clock</span> ${new Date(c.followUpDate).toLocaleString('pt-BR')}</p>` : ''}
+            ${c.followUpNotes ? `<p class="text-xs text-on-surface-variant italic mt-1">${c.followUpNotes}</p>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
     return `<div class="grid grid-cols-2 gap-md">
       ${f('Nome', c.name)} ${f('E-mail', c.email)}
       ${f('Telefone', c.phone)} ${f('CPF', c.cpf)}
       ${f('Cidade', c.city)} ${f('Interesse', c.interest)}
       ${f('Status', stLabels[c.status]||c.status)} ${f('Último Contato', c.lastContact)}
       ${f('Canal', c.via)} ${c.createdAt ? f('Cadastrado em', Fmt.date(c.createdAt)) : ''}
+      ${followUpBlock}
+    </div>
+    <div style="margin-top:16px">
+      <button class="w-full btn flex justify-center items-center gap-sm" onclick="App.showWhatsAppOptions('${c.id}')" style="background:#25D366;color:#fff;border:none">
+        <span class="material-symbols-outlined text-[18px]">chat</span> Enviar WhatsApp
+      </button>
     </div>`;
   },
 

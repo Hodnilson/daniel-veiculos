@@ -176,12 +176,33 @@ const App = {
       return true;
     });
 
-    document.getElementById('nav-menu').innerHTML = items.map(n =>
-      `<a class="nav-link flex items-center gap-md px-lg py-sm rounded-lg transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high" data-page="${n.id}" href="#/${n.id}">
-        <span class="material-symbols-outlined">${n.icon}</span>
-        <span class="text-sm font-bold">${n.label}</span>
-      </a>`
-    ).join('');
+    const itemsGerencia = items.filter(n => ['dashboard', 'financeiro', 'relatorios'].includes(n.id));
+    const itemsVendas = items.filter(n => ['estoque', 'crm', 'vitrine'].includes(n.id));
+
+    let html = '';
+    
+    if (itemsGerencia.length > 0) {
+      html += `<div class="px-lg py-xs text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mt-sm mb-xs">Gerência</div>`;
+      html += itemsGerencia.map(n =>
+        `<a class="nav-link flex items-center gap-md px-lg py-sm rounded-lg transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high" data-page="${n.id}" href="#/${n.id}">
+          <span class="material-symbols-outlined">${n.icon}</span>
+          <span class="text-sm font-bold">${n.label}</span>
+        </a>`
+      ).join('');
+    }
+
+    if (itemsVendas.length > 0) {
+      html += `<div class="px-lg py-xs text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mt-md mb-xs">Vendas</div>`;
+      html += itemsVendas.map(n =>
+        `<a class="nav-link flex items-center gap-md px-lg py-sm rounded-lg transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high" data-page="${n.id}" href="#/${n.id}">
+          <span class="material-symbols-outlined">${n.icon}</span>
+          <span class="text-sm font-bold">${n.label}</span>
+        </a>`
+      ).join('');
+    }
+
+    document.getElementById('nav-menu').innerHTML = html;
+
     document.getElementById('bottom-nav').innerHTML = items.slice(0,5).map(n =>
       `<a class="bnav flex flex-col items-center gap-xs py-xs text-on-surface-variant" data-page="${n.id}" href="#/${n.id}">
         <span class="material-symbols-outlined text-[22px]">${n.icon}</span>
@@ -393,7 +414,7 @@ const App = {
     div.innerHTML = `
       <h1 style="font-size:32px;color:#39FF14;text-align:center;margin-bottom:10px;font-weight:800">DANIEL VEÍCULOS</h1>
       <p style="text-align:center;color:#baccb0;margin-bottom:30px;letter-spacing:2px">FICHA TÉCNICA OFICIAL</p>
-      ${v.photo ? `<img src="${v.photo}" style="width:100%;height:350px;object-fit:cover;border-radius:16px;margin-bottom:30px">` : ''}
+      ${(v.photos && v.photos.length > 0) ? `<img src="${v.photos[0]}" style="width:100%;height:350px;object-fit:cover;border-radius:16px;margin-bottom:30px">` : (v.photo ? `<img src="${v.photo}" style="width:100%;height:350px;object-fit:cover;border-radius:16px;margin-bottom:30px">` : '')}
       <h2 style="font-size:42px;text-align:center;margin-bottom:10px">${v.brand} ${v.model}</h2>
       <p style="text-align:center;color:#baccb0;font-size:20px;margin-bottom:30px">${v.year} · ${v.color}</p>
       <div style="background:rgba(255,255,255,0.05);padding:24px;border-radius:16px;margin-bottom:30px">
@@ -550,6 +571,10 @@ const App = {
     e.preventDefault();
     const d = Object.fromEntries(new FormData(e.target));
     d.year = +d.year; d.price = +d.price; d.km = +d.km; d.costs = Number(d.costs) || 0;
+    if (d.photos) {
+      try { d.photos = JSON.parse(decodeURIComponent(d.photos)); } 
+      catch(err) { d.photos = []; }
+    }
     if (d.id) { DB.updateVehicle(d.id, d); this.toast('Veículo atualizado!'); }
     else { delete d.id; DB.addVehicle(d); this.toast('Veículo cadastrado!'); }
     this.closeModal();
@@ -595,12 +620,54 @@ const App = {
     if (cnt) cnt.textContent = `${cl.length} cliente(s)`;
   },
 
-  openWhatsApp(id) {
+  showWhatsAppOptions(id) {
+    const c = DB.customer(id); if(!c||!c.phone) return;
+    
+    this.openModal('Automação de WhatsApp', `
+      <p class="text-sm text-on-surface-variant mb-md">Selecione uma mensagem rápida para enviar para <strong>${c.name.split(' ')[0]}</strong>:</p>
+      <div class="flex flex-col gap-sm">
+        <button class="btn hover:bg-white/5 border border-white/10 flex justify-start items-center gap-md p-md rounded-lg text-left" onclick="App.sendWhatsApp('${id}', 'welcome')">
+          <span class="material-symbols-outlined text-green-400">waving_hand</span>
+          <div>
+            <p class="font-bold text-on-surface">Boas-vindas</p>
+            <p class="text-xs text-on-surface-variant">"Olá, vi que se interessou em..."</p>
+          </div>
+        </button>
+        <button class="btn hover:bg-white/5 border border-white/10 flex justify-start items-center gap-md p-md rounded-lg text-left" onclick="App.sendWhatsApp('${id}', 'followup')">
+          <span class="material-symbols-outlined text-blue-400">calendar_clock</span>
+          <div>
+            <p class="font-bold text-on-surface">Acompanhamento (Follow-up)</p>
+            <p class="text-xs text-on-surface-variant">"Passando para saber se conseguiu avaliar nossa proposta..."</p>
+          </div>
+        </button>
+        <button class="btn hover:bg-white/5 border border-white/10 flex justify-start items-center gap-md p-md rounded-lg text-left" onclick="App.sendWhatsApp('${id}', 'proposal')">
+          <span class="material-symbols-outlined text-yellow-400">description</span>
+          <div>
+            <p class="font-bold text-on-surface">Proposta de Fechamento</p>
+            <p class="text-xs text-on-surface-variant">"Temos uma condição especial imperdível..."</p>
+          </div>
+        </button>
+      </div>
+    `, `<button class="btn btn-ghost" onclick="App.closeModal()">Cancelar</button>`);
+  },
+
+  sendWhatsApp(id, type) {
     const c = DB.customer(id); if(!c||!c.phone) return;
     const phone = c.phone.replace(/\D/g, '');
     const vehicle = c.interest ? `na ${c.interest}` : 'nos nossos veículos';
-    const msg = encodeURIComponent(`Olá ${c.name.split(' ')[0]}, aqui é da Daniel Veículos! Notamos o seu interesse ${vehicle}, podemos conversar?`);
-    window.open(`https://api.whatsapp.com/send?phone=55${phone}&text=${msg}`, '_blank');
+    const firstName = c.name.split(' ')[0];
+    
+    let msg = '';
+    if (type === 'welcome') {
+      msg = `Olá ${firstName}, aqui é da Daniel Veículos! Notamos o seu interesse ${vehicle}, podemos conversar?`;
+    } else if (type === 'followup') {
+      msg = `Olá ${firstName}, tudo bem? Passando para saber se conseguiu avaliar nossa proposta sobre a ${vehicle}. Estou à disposição para tirar qualquer dúvida!`;
+    } else if (type === 'proposal') {
+      msg = `Olá ${firstName}! Conseguimos uma condição especial imperdível para a ${vehicle}. Vamos fechar negócio hoje?`;
+    }
+    
+    window.open(`https://api.whatsapp.com/send?phone=55${phone}&text=${encodeURIComponent(msg)}`, '_blank');
+    this.closeModal();
   },
 
   addCustomer() {
