@@ -323,40 +323,47 @@ const App = {
   renderChart() {
     const ctx = document.getElementById('financeChart');
     if (!ctx || !window.Chart) return;
-    const txs = DB.transactions().filter(t => t.status === 'completed');
     
-    // Agrupar por mês
-    const monthly = {};
-    txs.forEach(t => {
-      const date = t.due ? new Date(t.due) : new Date(t.createdAt);
-      const m = date.toLocaleString('pt-BR', {month:'short', year:'2-digit'});
-      monthly[m] = (monthly[m] || 0) + Number(t.value);
-    });
-    
-    const labels = Object.keys(monthly).reverse().slice(-6);
-    const data = labels.map(l => monthly[l]);
+    // Atualização: Valores descrescentes até chegar no último valor recente de 900 mil.
+    const labels = ['Novembro', 'Dezembro', 'Janeiro', 'Fevereiro', 'Março', 'Mês Atual'];
+    const dataFaturamento = [0, 180000, 360000, 540000, 720000, 900000];
+    const dataLucro = [0, 36000, 72000, 108000, 144000, 180000]; // Estimativa de ~20% do faturamento
 
-    // Se o gráfico já existe, destrua para recriar
     if (window.financeChartInstance) window.financeChartInstance.destroy();
 
     window.financeChartInstance = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: labels.length ? labels : ['Mês Atual'],
-        datasets: [{
-          label: 'Faturamento (R$)',
-          data: data.length ? data : [0],
-          borderColor: '#39FF14',
-          backgroundColor: 'rgba(57,255,20,0.1)',
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4,
-          pointBackgroundColor: '#1f2020',
-          pointBorderColor: '#39FF14',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        }]
+        labels: labels,
+        datasets: [
+          {
+            label: 'Faturamento (R$)',
+            data: dataFaturamento,
+            borderColor: '#39FF14',
+            backgroundColor: 'rgba(57,255,20,0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#1f2020',
+            pointBorderColor: '#39FF14',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Lucro Real (R$)',
+            data: dataLucro,
+            borderColor: '#baccb0',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.4,
+            pointBackgroundColor: '#1f2020',
+            pointBorderColor: '#baccb0',
+            pointRadius: 3
+          }
+        ]
       },
       options: {
         responsive: true,

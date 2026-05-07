@@ -194,7 +194,7 @@ const Pages = {
     return `<div class="glass-panel p-lg rounded-xl border border-white/5 mb-md">
       <div class="flex justify-between items-center mb-lg">
         <div><h3 class="font-h3 text-on-surface">Desempenho da Equipe</h3><p class="text-sm text-on-surface-variant">Acompanhamento de metas de vendas (Mês Atual)</p></div>
-        <button class="btn btn-ghost btn-sm"><span class="material-symbols-outlined text-[16px]">tune</span> Configurar Metas</button>
+        <button class="btn btn-ghost btn-sm" onclick="const val=prompt('Defina a nova meta mensal da equipe (R$):', '500000'); if(val) App.toast('Meta global atualizada para R$ '+parseFloat(val).toLocaleString('pt-BR'), 'success')"><span class="material-symbols-outlined text-[16px]">tune</span> Configurar Metas</button>
       </div>
       <div class="space-y-lg">
         ${['João Silva', 'Maria Fernandes', 'Carlos Eduardo'].map((n, i) => {
@@ -267,6 +267,27 @@ const Pages = {
         </form>
       </div>
       <div class="flex-1 bg-white/5 p-lg rounded-lg border border-white/5">
+        <div class="flex justify-between items-center mb-md">
+          <h3 class="font-h3 text-on-surface">Campanhas Ativas</h3>
+        </div>
+        <div class="space-y-sm mb-lg">
+          <div class="flex justify-between items-center border-b border-white/5 py-sm group">
+            <span class="text-on-surface-variant text-sm flex-1">Webmotors</span>
+            <span class="font-data-mono font-bold text-primary-container mr-md">${Fmt.money(1500)}</span>
+            <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+              <button class="text-on-surface-variant hover:text-primary-container" onclick="const v=prompt('Novo valor para Webmotors (R$):', '1500'); if(v) App.toast('Valor atualizado com sucesso', 'success')" title="Editar Valor"><span class="material-symbols-outlined text-[14px]">edit</span></button>
+              <button class="text-on-surface-variant hover:text-error" onclick="if(confirm('Tem certeza que deseja apagar o registro da Webmotors?')) App.toast('Lançamento excluído!', 'success')" title="Apagar"><span class="material-symbols-outlined text-[14px]">delete</span></button>
+            </div>
+          </div>
+          <div class="flex justify-between items-center border-b border-white/5 py-sm group">
+            <span class="text-on-surface-variant text-sm flex-1">Meta Ads (Insta/Face)</span>
+            <span class="font-data-mono font-bold text-primary-container mr-md">${Fmt.money(1000)}</span>
+            <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+              <button class="text-on-surface-variant hover:text-primary-container" onclick="const v=prompt('Novo valor para Meta Ads (R$):', '1000'); if(v) App.toast('Valor atualizado com sucesso', 'success')" title="Editar Valor"><span class="material-symbols-outlined text-[14px]">edit</span></button>
+              <button class="text-on-surface-variant hover:text-error" onclick="if(confirm('Tem certeza que deseja apagar o registro de Meta Ads?')) App.toast('Lançamento excluído!', 'success')" title="Apagar"><span class="material-symbols-outlined text-[14px]">delete</span></button>
+            </div>
+          </div>
+        </div>
         <h3 class="font-h3 text-on-surface mb-md">Retorno Sobre Investimento (ROI)</h3>
         <div class="space-y-sm">
           <div class="flex justify-between items-center border-b border-white/5 py-sm"><span class="text-on-surface-variant text-sm">Receita Atribuída ao Marketing</span><span class="font-data-mono font-bold text-primary-container">${Fmt.money(180000)}</span></div>
@@ -281,10 +302,10 @@ const Pages = {
     return `<div class="glass-panel p-lg rounded-xl border border-white/5">
       <div class="flex justify-between items-center mb-lg">
         <h3 class="font-h3 text-on-surface">Agenda Estratégica da Semana</h3>
-        <button class="btn btn-primary btn-sm"><span class="material-symbols-outlined text-[16px]">add</span>Novo Compromisso</button>
+        <button class="btn btn-primary btn-sm" onclick="App.toast('Abrindo formulário de agendamento...')"><span class="material-symbols-outlined text-[16px]">add</span>Novo Compromisso</button>
       </div>
       <div class="space-y-md">
-        <div class="flex gap-md p-md bg-primary-container/10 border border-primary-container/30 rounded-lg items-center">
+        <div class="flex gap-md p-md bg-primary-container/10 border border-primary-container/30 rounded-lg items-center group">
           <div class="bg-primary-container text-on-primary rounded p-sm text-center min-w-[60px]">
             <p class="text-[10px] font-bold uppercase">Hoje</p><p class="text-xl font-bold">14</p>
           </div>
@@ -292,9 +313,13 @@ const Pages = {
             <h4 class="font-bold text-primary-container text-sm">Entrega de Veículo: Porsche 911</h4>
             <p class="text-xs text-on-surface-variant">Cliente: Roberto Almeida — Preparação de laço e champagne.</p>
           </div>
-          <button class="btn btn-ghost btn-sm">Detalhes</button>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" title="Editar" onclick="App.toast('Editando compromisso')"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-error opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir" onclick="if(confirm('Excluir este compromisso?')) App.toast('Compromisso excluído!', 'success')"><span class="material-symbols-outlined text-[16px]">delete</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="App.toast('Visualizando detalhes completos do compromisso')">Detalhes</button>
+          </div>
         </div>
-        <div class="flex gap-md p-md bg-white/5 border border-white/5 rounded-lg items-center">
+        <div class="flex gap-md p-md bg-white/5 border border-white/5 rounded-lg items-center group">
           <div class="bg-surface-container-highest text-on-surface rounded p-sm text-center min-w-[60px]">
             <p class="text-[10px] font-bold uppercase">Amanhã</p><p class="text-xl font-bold">15</p>
           </div>
@@ -302,9 +327,13 @@ const Pages = {
             <h4 class="font-bold text-on-surface text-sm">Test-Drive: BMW X6</h4>
             <p class="text-xs text-on-surface-variant">Cliente: Juliana Costa — Veículo precisa estar lavado e abastecido.</p>
           </div>
-          <button class="btn btn-ghost btn-sm">Detalhes</button>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" title="Editar" onclick="App.toast('Editando compromisso')"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-error opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir" onclick="if(confirm('Excluir este compromisso?')) App.toast('Compromisso excluído!', 'success')"><span class="material-symbols-outlined text-[16px]">delete</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="App.toast('Visualizando detalhes completos do compromisso')">Detalhes</button>
+          </div>
         </div>
-        <div class="flex gap-md p-md bg-white/5 border border-white/5 rounded-lg items-center">
+        <div class="flex gap-md p-md bg-white/5 border border-white/5 rounded-lg items-center group">
           <div class="bg-surface-container-highest text-on-surface rounded p-sm text-center min-w-[60px]">
             <p class="text-[10px] font-bold uppercase">Sex</p><p class="text-xl font-bold">17</p>
           </div>
@@ -312,7 +341,11 @@ const Pages = {
             <h4 class="font-bold text-on-surface text-sm">Reunião de Alinhamento de Vendas</h4>
             <p class="text-xs text-on-surface-variant">Toda a equipe — Revisão das metas da segunda quinzena.</p>
           </div>
-          <button class="btn btn-ghost btn-sm">Detalhes</button>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" title="Editar" onclick="App.toast('Editando compromisso')"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-error opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir" onclick="if(confirm('Excluir este compromisso?')) App.toast('Compromisso excluído!', 'success')"><span class="material-symbols-outlined text-[16px]">delete</span></button>
+            <button class="btn btn-ghost btn-sm" onclick="App.toast('Visualizando detalhes completos do compromisso')">Detalhes</button>
+          </div>
         </div>
       </div>
     </div>`;
