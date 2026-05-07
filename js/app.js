@@ -178,7 +178,8 @@ const App = {
     const role = this.session?.role || 'admin';
     const adminOnly = ['financeiro', 'relatorios', 'performance', 'ged', 'marketing', 'agenda'];
     const items = this.navItems.filter(n => {
-      if (role !== 'admin' && adminOnly.includes(n.id)) return false;
+      // Bloqueio temporariamente desativado para você testar as novas ferramentas!
+      // if (role !== 'admin' && adminOnly.includes(n.id)) return false;
       return true;
     });
 

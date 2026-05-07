@@ -392,13 +392,19 @@ const Pages = {
           <div class="flex-1 bg-surface-container-low rounded-lg p-md border border-white/5">
             <h4 class="font-bold text-on-surface-variant text-sm mb-md flex justify-between">EM ANÁLISE <span class="bg-white/10 px-2 rounded-full text-xs">2</span></h4>
             <div class="space-y-sm">
-              <div class="bg-surface-container-high p-sm rounded border border-white/5 card-interactive">
-                <p class="font-bold text-sm text-on-surface">Marcos Silva</p>
+              <div class="bg-surface-container-high p-sm rounded border border-white/5 card-interactive relative group">
+                <div class="flex justify-between items-start">
+                  <p class="font-bold text-sm text-on-surface">Marcos Silva</p>
+                  <button class="text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" onclick="App.toast('Abrir edição/exclusão de crédito')" title="Editar Ficha"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+                </div>
                 <p class="text-xs text-on-surface-variant mb-sm">BMW 320i — R$ 250.000</p>
                 <div class="flex gap-xs"><span class="bg-yellow-500/20 text-yellow-400 text-[9px] px-2 py-0.5 rounded uppercase font-bold">Santander</span><span class="bg-yellow-500/20 text-yellow-400 text-[9px] px-2 py-0.5 rounded uppercase font-bold">Itaú</span></div>
               </div>
-              <div class="bg-surface-container-high p-sm rounded border border-white/5 card-interactive">
-                <p class="font-bold text-sm text-on-surface">Ana Paula</p>
+              <div class="bg-surface-container-high p-sm rounded border border-white/5 card-interactive relative group">
+                <div class="flex justify-between items-start">
+                  <p class="font-bold text-sm text-on-surface">Ana Paula</p>
+                  <button class="text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" onclick="App.toast('Abrir edição/exclusão de crédito')" title="Editar Ficha"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+                </div>
                 <p class="text-xs text-on-surface-variant mb-sm">Jeep Compass — R$ 140.000</p>
                 <div class="flex gap-xs"><span class="bg-yellow-500/20 text-yellow-400 text-[9px] px-2 py-0.5 rounded uppercase font-bold">BV Financeira</span></div>
               </div>
@@ -408,8 +414,11 @@ const Pages = {
           <div class="flex-1 bg-primary-container/5 rounded-lg p-md border border-primary-container/20">
             <h4 class="font-bold text-primary-container text-sm mb-md flex justify-between">APROVADOS <span class="bg-primary-container/20 px-2 rounded-full text-xs">1</span></h4>
             <div class="space-y-sm">
-              <div class="bg-surface-container-high p-sm rounded border border-primary-container/30 card-interactive">
-                <p class="font-bold text-sm text-on-surface">Roberto Costa</p>
+              <div class="bg-surface-container-high p-sm rounded border border-primary-container/30 card-interactive relative group">
+                <div class="flex justify-between items-start">
+                  <p class="font-bold text-sm text-on-surface">Roberto Costa</p>
+                  <button class="text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" onclick="App.toast('Abrir edição/exclusão de crédito')" title="Editar Ficha"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+                </div>
                 <p class="text-xs text-on-surface-variant mb-sm">Audi Q3 — R$ 190.000</p>
                 <p class="text-[10px] text-on-surface-variant mb-xs">Taxa aprovada: 1.49%</p>
                 <div class="flex gap-xs"><span class="bg-primary-container/20 text-primary-container text-[9px] px-2 py-0.5 rounded uppercase font-bold">Safra</span></div>
@@ -420,8 +429,11 @@ const Pages = {
           <div class="flex-1 bg-error/5 rounded-lg p-md border border-error/20">
             <h4 class="font-bold text-error text-sm mb-md flex justify-between">RECUSADOS / PENDÊNCIAS <span class="bg-error/20 px-2 rounded-full text-xs">1</span></h4>
             <div class="space-y-sm">
-              <div class="bg-surface-container-high p-sm rounded border border-error/30 card-interactive">
-                <p class="font-bold text-sm text-on-surface">Carlos Eduardo</p>
+              <div class="bg-surface-container-high p-sm rounded border border-error/30 card-interactive relative group">
+                <div class="flex justify-between items-start">
+                  <p class="font-bold text-sm text-on-surface">Carlos Eduardo</p>
+                  <button class="text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" onclick="App.toast('Abrir edição/exclusão de crédito')" title="Editar Ficha"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+                </div>
                 <p class="text-xs text-on-surface-variant mb-sm">Honda Civic — R$ 120.000</p>
                 <p class="text-[10px] text-error mb-xs">Motivo: Score Baixo</p>
                 <div class="flex gap-xs"><span class="bg-error/20 text-error text-[9px] px-2 py-0.5 rounded uppercase font-bold">Itaú</span></div>
