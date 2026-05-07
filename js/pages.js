@@ -194,7 +194,7 @@ const Pages = {
     return `<div class="glass-panel p-lg rounded-xl border border-white/5 mb-md">
       <div class="flex justify-between items-center mb-lg">
         <div><h3 class="font-h3 text-on-surface">Desempenho da Equipe</h3><p class="text-sm text-on-surface-variant">Acompanhamento de metas de vendas (Mês Atual)</p></div>
-        <button class="btn btn-ghost btn-sm" onclick="const val=prompt('Defina a nova meta mensal da equipe (R$):', '500000'); if(val) App.toast('Meta global atualizada para R$ '+parseFloat(val).toLocaleString('pt-BR'), 'success')"><span class="material-symbols-outlined text-[16px]">tune</span> Configurar Metas</button>
+        <button class="btn btn-ghost btn-sm" onclick="App.openModal('Configurar Metas', UI.perfMetaForm(500000), '<button class=\\'btn btn-primary\\' onclick=\\'App.toast(\\'Meta atualizada!\\', \\'success\\');App.closeModal()\\'>Salvar</button>')"><span class="material-symbols-outlined text-[16px]">tune</span> Configurar Metas</button>
       </div>
       <div class="space-y-lg">
         ${['João Silva', 'Maria Fernandes', 'Carlos Eduardo'].map((n, i) => {
@@ -275,7 +275,7 @@ const Pages = {
             <span class="text-on-surface-variant text-sm flex-1">Webmotors</span>
             <span class="font-data-mono font-bold text-primary-container mr-md">${Fmt.money(1500)}</span>
             <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-              <button class="text-on-surface-variant hover:text-primary-container" onclick="const v=prompt('Novo valor para Webmotors (R$):', '1500'); if(v) App.toast('Valor atualizado com sucesso', 'success')" title="Editar Valor"><span class="material-symbols-outlined text-[14px]">edit</span></button>
+              <button class="text-on-surface-variant hover:text-primary-container" onclick="App.openModal('Editar Campanha', UI.mktExpenseForm({name:'Webmotors', value:1500}), '<button class=\\'btn btn-primary\\' onclick=\\'App.toast(\\'Campanha atualizada!\\', \\'success\\');App.closeModal()\\'>Salvar</button>')" title="Editar Valor"><span class="material-symbols-outlined text-[14px]">edit</span></button>
               <button class="text-on-surface-variant hover:text-error" onclick="if(confirm('Tem certeza que deseja apagar o registro da Webmotors?')) App.toast('Lançamento excluído!', 'success')" title="Apagar"><span class="material-symbols-outlined text-[14px]">delete</span></button>
             </div>
           </div>
@@ -283,7 +283,7 @@ const Pages = {
             <span class="text-on-surface-variant text-sm flex-1">Meta Ads (Insta/Face)</span>
             <span class="font-data-mono font-bold text-primary-container mr-md">${Fmt.money(1000)}</span>
             <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-              <button class="text-on-surface-variant hover:text-primary-container" onclick="const v=prompt('Novo valor para Meta Ads (R$):', '1000'); if(v) App.toast('Valor atualizado com sucesso', 'success')" title="Editar Valor"><span class="material-symbols-outlined text-[14px]">edit</span></button>
+              <button class="text-on-surface-variant hover:text-primary-container" onclick="App.openModal('Editar Campanha', UI.mktExpenseForm({name:'Meta Ads', value:1000}), '<button class=\\'btn btn-primary\\' onclick=\\'App.toast(\\'Campanha atualizada!\\', \\'success\\');App.closeModal()\\'>Salvar</button>')" title="Editar Valor"><span class="material-symbols-outlined text-[14px]">edit</span></button>
               <button class="text-on-surface-variant hover:text-error" onclick="if(confirm('Tem certeza que deseja apagar o registro de Meta Ads?')) App.toast('Lançamento excluído!', 'success')" title="Apagar"><span class="material-symbols-outlined text-[14px]">delete</span></button>
             </div>
           </div>
@@ -302,7 +302,7 @@ const Pages = {
     return `<div class="glass-panel p-lg rounded-xl border border-white/5">
       <div class="flex justify-between items-center mb-lg">
         <h3 class="font-h3 text-on-surface">Agenda Estratégica da Semana</h3>
-        <button class="btn btn-primary btn-sm" onclick="App.toast('Abrindo formulário de agendamento...')"><span class="material-symbols-outlined text-[16px]">add</span>Novo Compromisso</button>
+        <button class="btn btn-primary btn-sm" onclick="App.openModal('Novo Compromisso', UI.agendaEventForm(), '<button class=\\'btn btn-primary\\' onclick=\\'App.toast(\\'Agendado!\\', \\'success\\');App.closeModal()\\'>Agendar</button>')"><span class="material-symbols-outlined text-[16px]">add</span>Novo Compromisso</button>
       </div>
       <div class="space-y-md">
         <div class="flex gap-md p-md bg-primary-container/10 border border-primary-container/30 rounded-lg items-center group">
@@ -314,9 +314,9 @@ const Pages = {
             <p class="text-xs text-on-surface-variant">Cliente: Roberto Almeida — Preparação de laço e champagne.</p>
           </div>
           <div class="flex gap-2">
-            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" title="Editar" onclick="App.toast('Editando compromisso')"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" title="Editar" onclick="App.openModal('Editar Compromisso', UI.agendaEventForm({title:'Entrega de Veículo: Porsche 911', desc:'Cliente: Roberto Almeida — Preparação de laço e champagne.', date:'2025-05-14T10:00'}), '<button class=\\'btn btn-primary\\' onclick=\\'App.toast(\\'Atualizado!\\', \\'success\\');App.closeModal()\\'>Salvar</button>')"><span class="material-symbols-outlined text-[16px]">edit</span></button>
             <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-error opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir" onclick="if(confirm('Excluir este compromisso?')) App.toast('Compromisso excluído!', 'success')"><span class="material-symbols-outlined text-[16px]">delete</span></button>
-            <button class="btn btn-ghost btn-sm" onclick="App.toast('Visualizando detalhes completos do compromisso')">Detalhes</button>
+            <button class="btn btn-ghost btn-sm" onclick="App.toast('Visualizando detalhes...')">Detalhes</button>
           </div>
         </div>
         <div class="flex gap-md p-md bg-white/5 border border-white/5 rounded-lg items-center group">
@@ -328,9 +328,9 @@ const Pages = {
             <p class="text-xs text-on-surface-variant">Cliente: Juliana Costa — Veículo precisa estar lavado e abastecido.</p>
           </div>
           <div class="flex gap-2">
-            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" title="Editar" onclick="App.toast('Editando compromisso')"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" title="Editar" onclick="App.openModal('Editar Compromisso', UI.agendaEventForm({title:'Test-Drive: BMW X6', desc:'Cliente: Juliana Costa — Veículo precisa estar lavado e abastecido.', date:'2025-05-15T14:30'}), '<button class=\\'btn btn-primary\\' onclick=\\'App.toast(\\'Atualizado!\\', \\'success\\');App.closeModal()\\'>Salvar</button>')"><span class="material-symbols-outlined text-[16px]">edit</span></button>
             <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-error opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir" onclick="if(confirm('Excluir este compromisso?')) App.toast('Compromisso excluído!', 'success')"><span class="material-symbols-outlined text-[16px]">delete</span></button>
-            <button class="btn btn-ghost btn-sm" onclick="App.toast('Visualizando detalhes completos do compromisso')">Detalhes</button>
+            <button class="btn btn-ghost btn-sm" onclick="App.toast('Visualizando detalhes...')">Detalhes</button>
           </div>
         </div>
         <div class="flex gap-md p-md bg-white/5 border border-white/5 rounded-lg items-center group">
@@ -342,9 +342,9 @@ const Pages = {
             <p class="text-xs text-on-surface-variant">Toda a equipe — Revisão das metas da segunda quinzena.</p>
           </div>
           <div class="flex gap-2">
-            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" title="Editar" onclick="App.toast('Editando compromisso')"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+            <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-primary-container opacity-0 group-hover:opacity-100 transition-opacity" title="Editar" onclick="App.openModal('Editar Compromisso', UI.agendaEventForm({title:'Reunião de Alinhamento de Vendas', desc:'Toda a equipe — Revisão das metas da segunda quinzena.', date:'2025-05-17T09:00'}), '<button class=\\'btn btn-primary\\' onclick=\\'App.toast(\\'Atualizado!\\', \\'success\\');App.closeModal()\\'>Salvar</button>')"><span class="material-symbols-outlined text-[16px]">edit</span></button>
             <button class="btn btn-ghost btn-sm px-2 text-on-surface-variant hover:text-error opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir" onclick="if(confirm('Excluir este compromisso?')) App.toast('Compromisso excluído!', 'success')"><span class="material-symbols-outlined text-[16px]">delete</span></button>
-            <button class="btn btn-ghost btn-sm" onclick="App.toast('Visualizando detalhes completos do compromisso')">Detalhes</button>
+            <button class="btn btn-ghost btn-sm" onclick="App.toast('Visualizando detalhes...')">Detalhes</button>
           </div>
         </div>
       </div>

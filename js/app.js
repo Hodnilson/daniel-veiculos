@@ -870,13 +870,14 @@ const App = {
   },
 
   /* ── Toast ── */
-  toast(msg, type = '') {
+  toast(msg, type = 'success') {
     const c = document.getElementById('toast-container');
     const t = document.createElement('div');
-    t.className = 'toast' + (type === 'err' ? ' err' : '');
-    t.textContent = msg;
+    t.className = 'toast ' + type;
+    const icon = type === 'err' ? 'error' : 'check_circle';
+    t.innerHTML = `<span class="material-symbols-outlined" style="font-size:20px">${icon}</span><span>${msg}</span>`;
     c.appendChild(t);
-    setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 3200);
+    setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 250); }, 3500);
   },
 };
 

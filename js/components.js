@@ -581,4 +581,32 @@ const UI = {
       <div class="divide-y divide-white/5">${items.map(renderFn).join('')}</div>
     </div>`;
   },
+
+  /* ── Nice Form Templates ── */
+  perfMetaForm(current) {
+    return `<div class="space-y-md">
+      <p class="text-sm text-on-surface-variant">Defina a meta global de vendas para este mês.</p>
+      <div class="form-group">
+        <label class="form-label">Meta Global (R$)</label>
+        <input type="number" id="new-meta-val" class="neon-input" value="${current}" required>
+      </div>
+    </div>`;
+  },
+
+  mktExpenseForm(camp) {
+    camp = camp || { name: '', value: '' };
+    return `<div class="space-y-md">
+      <div class="form-group"><label class="form-label">Canal</label><input type="text" id="mkt-name" class="neon-input" value="${camp.name}" required></div>
+      <div class="form-group"><label class="form-label">Investimento (R$)</label><input type="number" id="mkt-val" class="neon-input" value="${camp.value}" required></div>
+    </div>`;
+  },
+
+  agendaEventForm(ev) {
+    ev = ev || { title: '', desc: '', date: '' };
+    return `<div class="space-y-md">
+      <div class="form-group"><label class="form-label">Título</label><input type="text" id="ev-title" class="neon-input" value="${ev.title}" required></div>
+      <div class="form-group"><label class="form-label">Data e Hora</label><input type="datetime-local" id="ev-date" class="neon-input" value="${ev.date}" required></div>
+      <div class="form-group"><label class="form-label">Descrição</label><textarea id="ev-desc" class="neon-input" rows="3">${ev.desc}</textarea></div>
+    </div>`;
+  }
 };
